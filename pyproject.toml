@@ -1,0 +1,32 @@
+[project]
+name = "litebook"
+version = "0.0.0"
+description = "A pure-Python limit order book"
+license = {text = "MIT License"}
+keywords = ["limit order book", "order book"]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.urls]
+repository = "https://github.com/pnxenopoulos/litebook"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.6.8",
+    "mypy>=1.13.0",
+    "ruff>=0.8.1",
+    "sphinx>=8.1.3",
+]
+
+# Test & Coverage config
+[tool.coverage.run]
+branch = true
+source = ["awpy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# Ruff
+[tool.ruff.lint.pydocstyle]
+convention = "google"
