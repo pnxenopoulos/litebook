@@ -15,6 +15,7 @@ repository = "https://github.com/pnxenopoulos/litebook"
 dev = [
     "coverage>=7.6.8",
     "mypy>=1.13.0",
+    "pytest>=8.3.3",
     "ruff>=0.8.1",
     "sphinx>=8.1.3",
 ]
