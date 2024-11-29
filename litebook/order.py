@@ -41,12 +41,14 @@ class Order:
                 self.price == comparison.price and self.timestamp < comparison.timestamp
             )
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def __str__(self) -> str:
         return f"{self.side} {self.quantity} @ {self.price} [{int(self.timestamp.timestamp() * 1e9)}]"
 
     def matches(self, comparison: "Order") -> bool:
-        return (
-            self.side != comparison.side
-            and (self.side == "buy" and self.price >= comparison.price)
-            or (self.side == "sell" and self.price <= comparison.price)
+        return self.side != comparison.side and (
+            (self.side == OrderType.BUY and self.price >= comparison.price)
+            or (self.side == OrderType.SELL and self.price <= comparison.price)
         )

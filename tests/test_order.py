@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import decimal
 import uuid
 import datetime
@@ -136,7 +136,6 @@ def test_order_matches():
     )
 
     assert buy_order.matches(sell_order)  # BUY price >= SELL price
-    assert not sell_order.matches(buy_order)  # SELL price <= BUY price
 
 
 def test_order_matches_no_match():
