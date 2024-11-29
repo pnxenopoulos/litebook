@@ -44,6 +44,12 @@ jobs:
       - name: MyPy
         run: uv run mypy .
 
+      - name: Debug
+        run: which pytest
+
+      - name: Debug 2
+        run: uv run which pytest
+
       - name: Pytest
         run: uv run pytest
 
