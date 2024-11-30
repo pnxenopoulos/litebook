@@ -6,7 +6,9 @@ license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "sortedcontainers>=2.4.0",
+]
 
 [project.urls]
 repository = "https://github.com/pnxenopoulos/litebook"
