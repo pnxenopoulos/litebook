@@ -1,3 +1,5 @@
+"""Test the litebook.order module."""
+
 import pytest
 import decimal
 

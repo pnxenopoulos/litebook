@@ -18,9 +18,6 @@ class OrderStatus(enum.StrEnum):
     FILLED = "FILLED"
     CANCELED = "CANCELED"
 
-    def is_open(self) -> bool:
-        return self == OrderStatus.OPEN
-
 
 class Fill(NamedTuple):
     quantity: decimal.Decimal
@@ -52,6 +49,10 @@ class Order:
     @property
     def size(self) -> decimal.Decimal:
         return self.price * self.quantity
+
+    @property
+    def is_open(self) -> bool:
+        return self.status == OrderStatus.OPEN
 
     def __lt__(self, comparison: "Order") -> bool:
         match self.side:
