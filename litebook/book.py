@@ -6,7 +6,19 @@ import litebook.order
 
 
 class OrderBook:
+    """Represents a limit order book for managing buy and sell orders.
+
+    Attributes:
+        bids (sortedcontainers.SortedDict): Sorted dictionary for buy orders
+            (keys are price levels, values are lists of orders).
+        asks (sortedcontainers.SortedDict): Sorted dictionary for sell orders
+            (keys are price levels, values are lists of orders).
+        open_orders (dict[uuid.UUID, litebook.order.Order]): Mapping of open
+            orders by their unique IDs.
+    """
+
     def __init__(self) -> None:
+        """Initializes the order book with empty bid and ask dictionaries."""
         # Two SortedDicts: one for buy orders, one for sell orders
         # Keys are price levels; values are lists of orders at each level
         self.bids = sortedcontainers.SortedDict(
@@ -18,11 +30,21 @@ class OrderBook:
         self.open_orders: dict[uuid.UUID, litebook.order.Order] = {}
 
     def clear(self) -> None:
+        """Clears all orders from the order book."""
         self.bids.clear()
         self.asks.clear()
         self.open_orders.clear()
 
     def add(self, order: litebook.order.Order) -> list[litebook.order.Fill]:
+        """Adds an order to the book and attempts to match it.
+
+        Args:
+            order (litebook.order.Order): The order to add.
+
+        Returns:
+            list[litebook.order.Fill]: A list of fills resulting from matching
+            this order with existing orders.
+        """
         # Check for matching orders on the opposite side
         fills = self._match(order)
 
@@ -44,6 +66,14 @@ class OrderBook:
         self,
         incoming_order: litebook.order.Order,
     ) -> list[litebook.order.Fill]:
+        """Matches an incoming order with orders in the opposite book.
+
+        Args:
+            incoming_order (litebook.order.Order): The incoming order to match.
+
+        Returns:
+            list[litebook.order.Fill]: A list of fills resulting from the match.
+        """
         fills = []
 
         # Determine the opposite book (bids for a sell order, asks for a buy order)
@@ -90,6 +120,11 @@ class OrderBook:
         return fills
 
     def cancel(self, order_id: uuid.UUID | str) -> None:
+        """Cancels an order by its unique ID.
+
+        Args:
+            order_id (uuid.UUID | str): The unique ID of the order to cancel.
+        """
         if isinstance(order_id, str):
             order_id = uuid.UUID(order_id)
 
@@ -114,6 +149,14 @@ class OrderBook:
             del self.open_orders[order_id]
 
     def get(self, order_id: uuid.UUID | str) -> litebook.order.Order | None:
+        """Retrieves an order by its unique ID.
+
+        Args:
+            order_id (uuid.UUID | str): The unique ID of the order to retrieve.
+
+        Returns:
+            litebook.order.Order | None: The order if found, otherwise None.
+        """
         if isinstance(order_id, str):
             order_id = uuid.UUID(order_id)
 
@@ -128,6 +171,16 @@ class OrderBook:
         side: litebook.order.OrderType,
         k: int | None = None,
     ) -> list[litebook.order.Order]:
+        """Retrieves orders at a specific price level on a given side.
+
+        Args:
+            price (decimal.Decimal): The price level to query.
+            side (litebook.order.OrderType): The side (BUY or SELL) to query.
+            k (int | None): The number of orders to retrieve. If None, return all orders.
+
+        Returns:
+            list[litebook.order.Order]: A list of orders at the specified price level.
+        """
         price = decimal.Decimal(price)  # Ensure price is a Decimal
         order_book = self.bids if side == litebook.order.OrderType.BUY else self.asks
         orders_at_price = order_book.get(price, [])
@@ -137,6 +190,11 @@ class OrderBook:
 
     @property
     def spread(self) -> decimal.Decimal | None:
+        """Calculates the bid-ask spread.
+
+        Returns:
+            decimal.Decimal | None: The spread if both bids and asks exist, otherwise None.
+        """
         best_buy_price: decimal.Decimal | None = (
             self.bids.peekitem(0)[0] if self.bids else None
         )
@@ -151,14 +209,29 @@ class OrderBook:
 
     @property
     def best_bid(self) -> decimal.Decimal | None:
+        """Finds the best bid price.
+
+        Returns:
+            decimal.Decimal | None: The highest bid price, or None if there are no bids.
+        """
         return self.bids.peekitem(0)[0] if self.bids else None
 
     @property
     def best_ask(self) -> decimal.Decimal | None:
+        """Finds the best ask price.
+
+        Returns:
+            decimal.Decimal | None: The lowest ask price, or None if there are no asks.
+        """
         return self.asks.peekitem(0)[0] if self.asks else None
 
     @property
     def buy_volume(self) -> decimal.Decimal:
+        """Calculates the total buy volume.
+
+        Returns:
+            decimal.Decimal: The total buy volume across all price levels.
+        """
         return decimal.Decimal(
             sum(
                 sum(order.quantity for order in orders) for orders in self.bids.values()
@@ -167,6 +240,11 @@ class OrderBook:
 
     @property
     def sell_volume(self) -> decimal.Decimal:
+        """Calculates the total sell volume.
+
+        Returns:
+            decimal.Decimal: The total sell volume across all price levels.
+        """
         return decimal.Decimal(
             sum(
                 sum(order.quantity for order in orders) for orders in self.asks.values()
@@ -175,7 +253,13 @@ class OrderBook:
 
     @property
     def open_volume(self) -> decimal.Decimal:
+        """Calculates the total open volume (buy + sell).
+
+        Returns:
+            decimal.Decimal: The total open volume across all price levels.
+        """
         return self.buy_volume + self.sell_volume
 
     def __repr__(self) -> str:
+        """Provides a representation of the order when printing."""
         return f"Best Bid: {self.best_bid}, Best Ask: {self.best_ask} (Spread: {self.spread})\n Open Buy Volume: {self.buy_volume}, Open Sell Volume: {self.sell_volume}"
