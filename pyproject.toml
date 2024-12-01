@@ -37,3 +37,7 @@ convention = "google"
 # MyPy
 [tool.mypy]
 exclude = "tests/"
+
+[[tool.mypy.overrides]]
+module = "sortedcontainers"
+ignore_missing_imports = true

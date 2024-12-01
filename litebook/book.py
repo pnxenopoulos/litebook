@@ -6,7 +6,7 @@ import litebook.order
 
 
 class OrderBook:
-    def __init__(self):
+    def __init__(self) -> None:
         # Two SortedDicts: one for buy orders, one for sell orders
         # Keys are price levels; values are lists of orders at each level
         self.bids = sortedcontainers.SortedDict(
@@ -15,7 +15,7 @@ class OrderBook:
         self.asks = sortedcontainers.SortedDict()  # Min-heap semantics for sell orders
 
         # Mapping from UUID to litebook.order.Order
-        self.open_orders = {}
+        self.open_orders: dict[uuid.UUID, litebook.order.Order] = {}
 
     def clear(self) -> None:
         self.bids.clear()
