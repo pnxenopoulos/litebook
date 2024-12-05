@@ -9,12 +9,15 @@ class OrderBook:
     """Represents a limit order book for managing buy and sell orders.
 
     Attributes:
-        bids (sortedcontainers.SortedDict): Sorted dictionary for buy orders
-            (keys are price levels, values are lists of orders).
-        asks (sortedcontainers.SortedDict): Sorted dictionary for sell orders
-            (keys are price levels, values are lists of orders).
-        open_orders (dict[uuid.UUID, litebook.order.Order]): Mapping of open
-            orders by their unique IDs.
+        bids (sortedcontainers.SortedDict): A sorted dictionary for buy orders.
+            Keys are price levels in descending order, and values are lists of orders.
+        asks (sortedcontainers.SortedDict): A sorted dictionary for sell orders.
+            Keys are price levels in ascending order, and values are lists of orders.
+        open_orders (dict[uuid.UUID, litebook.order.Order]): A mapping of open
+            orders by their unique UUIDs.
+        tick_size (decimal.Decimal): The minimum price increment for orders.
+        market_depth (int | None): The number of ticks from the best bid/ask
+            to retain in the order book. If None, no depth limit is enforced.
     """
 
     def __init__(
