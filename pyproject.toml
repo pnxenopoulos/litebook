@@ -5,7 +5,7 @@ description = "A pure-Python limit order book with tick sizes, market depth and 
 license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "sortedcontainers>=2.4.0",
 ]
