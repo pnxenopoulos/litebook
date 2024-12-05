@@ -9,7 +9,7 @@ from litebook.book import OrderBook
 
 
 @pytest.fixture
-def order_book():
+def order_book() -> OrderBook:
     return OrderBook(tick_size=decimal.Decimal("0.05"), market_depth=100)
 
 
