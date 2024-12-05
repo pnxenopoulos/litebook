@@ -63,12 +63,14 @@ class OrderBook:
         # Calculate allowed price range based on tick size and market depth
         if self.bids:
             best_bid = self.best_bid
+            assert isinstance(best_bid, decimal.Decimal)
             bid_lower_bound = best_bid - (self.tick_size * self.market_depth)
         else:
             bid_lower_bound = None
 
         if self.asks:
             best_ask = self.best_ask
+            assert isinstance(best_ask, decimal.Decimal)
             ask_upper_bound = best_ask + (self.tick_size * self.market_depth)
         else:
             ask_upper_bound = None
