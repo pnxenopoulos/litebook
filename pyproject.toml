@@ -1,7 +1,7 @@
 [project]
 name = "litebook"
 version = "0.0.0"
-description = "A pure-Python limit order book"
+description = "A pure-Python limit order book with tick sizes, market depth and visualization."
 license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]
 readme = "README.md"
