@@ -17,8 +17,17 @@ class OrderBook:
             orders by their unique IDs.
     """
 
-    def __init__(self) -> None:
-        """Initializes the order book with empty bid and ask dictionaries."""
+    def __init__(
+        self,
+        tick_size: decimal.Decimal = decimal.Decimal("0.01"),
+        market_depth: int | None = None,
+    ) -> None:
+        """Initializes the order book with empty bid and ask dictionaries.
+
+        Args:
+            tick_size (decimal.Decimal, optional): Default tick size to consider when adding orders. Defaults to decimal.Decimal("0.01").
+            market_depth (int | None, optional): How many ticks from the best bid/ask to keep. Defaults to None.
+        """
         # Two SortedDicts: one for buy orders, one for sell orders
         # Keys are price levels; values are lists of orders at each level
         self.bids = sortedcontainers.SortedDict(
@@ -28,6 +37,67 @@ class OrderBook:
 
         # Mapping from UUID to litebook.order.Order
         self.open_orders: dict[uuid.UUID, litebook.order.Order] = {}
+
+        # Tick size for rounding prices
+        self.tick_size = decimal.Decimal(tick_size)
+
+        # Market depth limit
+        self.market_depth = int(market_depth) if market_depth is not None else None
+
+    def _is_valid_price(self, price: decimal.Decimal) -> bool:
+        """Checks if a price conforms to the tick size.
+
+        Args:
+            price (decimal.Decimal): Price to see if it conforms to the book's tick size.
+
+        Returns:
+            bool: True if the price is in the right tick size, False otherwise.
+        """
+        return (price % self.tick_size) == 0
+
+    def _enforce_market_depth(self) -> None:
+        """Removes orders outside the allowed market depth in terms of tick size."""
+        if self.market_depth is None or not (self.bids or self.asks):
+            return
+
+        # Calculate allowed price range based on tick size and market depth
+        if self.bids:
+            best_bid = self.best_bid
+            bid_lower_bound = best_bid - (self.tick_size * self.market_depth)
+        else:
+            bid_lower_bound = None
+
+        if self.asks:
+            best_ask = self.best_ask
+            ask_upper_bound = best_ask + (self.tick_size * self.market_depth)
+        else:
+            ask_upper_bound = None
+
+        # Remove bids below the lower bound
+        if bid_lower_bound is not None:
+            for price in list(self.bids.keys()):
+                if price < bid_lower_bound:
+                    self._remove_price_level(price, self.bids)
+
+        # Remove asks above the upper bound
+        if ask_upper_bound is not None:
+            for price in list(self.asks.keys()):
+                if price > ask_upper_bound:
+                    self._remove_price_level(price, self.asks)
+
+    def _remove_price_level(
+        self, price: decimal.Decimal, book_side: sortedcontainers.SortedDict
+    ) -> None:
+        """Removes all orders at a specific price level from the book.
+
+        Args:
+            price (decimal.Decimal): Price level to remove.
+            book_side (sortedcontainers.SortedDict): A sorted dictionary represent an order book side.
+        """
+        if price in book_side:
+            for order in book_side[price]:
+                self.open_orders.pop(order.id, None)
+            del book_side[price]
 
     def clear(self) -> None:
         """Clears all orders from the order book."""
@@ -45,6 +115,10 @@ class OrderBook:
             list[litebook.order.Fill]: A list of fills resulting from matching
             this order with existing orders.
         """
+        # Validate price against tick size
+        if not self._is_valid_price(order.price):
+            return []
+
         # Check for matching orders on the opposite side
         fills = self._match(order)
 
@@ -59,6 +133,9 @@ class OrderBook:
 
             # Add to the order map
             self.open_orders[order.id] = order
+
+        # Enforce market depth after adding the order
+        self._enforce_market_depth()
 
         return fills
 
