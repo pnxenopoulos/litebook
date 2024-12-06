@@ -21,7 +21,17 @@ jobs:
         run: uv build
 
       - name: "Publish to Test PyPi"
-        run: uv publish --publish-url https://test.pypi.org/legacy/ --token ... --trusted-publishing
+        env:
+          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: uv publish --publish-url https://test.pypi.org/legacy/ --token $TEST_PYPI_TOKEN
 
-      - name: "Verify"
-        run: uv run --with litebook --no-project -- python -c "import litebook"
+      - name: "Verify Test PyPI installation"
+        run: |
+          uv run -- pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple litebook==$(uv python -c "import litebook; print(litebook.__version__)")
+          uv run -- python -c "import litebook; print('Package imported successfully from Test PyPI')"
+
+      - name: "Publish to PyPI"
+        if: ${{ success() }}
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: uv publish --token $PYPI_TOKEN
