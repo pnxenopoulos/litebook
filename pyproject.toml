@@ -25,7 +25,7 @@ dev = [
 # Test & Coverage
 [tool.coverage.run]
 branch = true
-source = ["awpy"]
+source = ["litebook"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
