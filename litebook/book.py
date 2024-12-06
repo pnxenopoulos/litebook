@@ -1,3 +1,5 @@
+"""Module for a limit order book."""
+
 import decimal
 import uuid
 
