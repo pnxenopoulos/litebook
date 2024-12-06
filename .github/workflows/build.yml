@@ -35,8 +35,10 @@ jobs:
       - name: MyPy
         run: uv run mypy .
 
-      - name: Pytest
-        run: uv run pytest
+      - name: Pytest & Coverage
+        run: |
+          uv run coverage run -m pytest --durations=10
+          uv run coverage report -m
 
       - name: Minimize uv cache
         run: uv cache prune --ci

@@ -15,14 +15,14 @@ class OrderBook:
             Keys are price levels in ascending order, and values are lists of orders.
         open_orders (dict[uuid.UUID, litebook.order.Order]): A mapping of open
             orders by their unique UUIDs.
-        tick_size (decimal.Decimal): The minimum price increment for orders.
+        tick_size (decimal.Decimal | None): The minimum price increment for orders.
         market_depth (int | None): The number of ticks from the best bid/ask
             to retain in the order book. If None, no depth limit is enforced.
     """
 
     def __init__(
         self,
-        tick_size: decimal.Decimal = decimal.Decimal("0.01"),
+        tick_size: decimal.Decimal | None = decimal.Decimal("0.01"),
         market_depth: int | None = None,
     ) -> None:
         """Initializes the order book with empty bid and ask dictionaries.
@@ -42,7 +42,7 @@ class OrderBook:
         self.open_orders: dict[uuid.UUID, litebook.order.Order] = {}
 
         # Tick size for rounding prices
-        self.tick_size = decimal.Decimal(tick_size)
+        self.tick_size = decimal.Decimal(tick_size) if tick_size is not None else None
 
         # Market depth limit
         self.market_depth = int(market_depth) if market_depth is not None else None
@@ -56,11 +56,18 @@ class OrderBook:
         Returns:
             bool: True if the price is in the right tick size, False otherwise.
         """
-        return (price % self.tick_size) == 0
+        if self.tick_size is not None:
+            return (price % self.tick_size) == 0
+        else:
+            return True
 
     def _enforce_market_depth(self) -> None:
         """Removes orders outside the allowed market depth in terms of tick size."""
-        if self.market_depth is None or not (self.bids or self.asks):
+        if (
+            self.tick_size is None
+            or self.market_depth is None
+            or not (self.bids or self.asks)
+        ):
             return
 
         # Calculate allowed price range based on tick size and market depth

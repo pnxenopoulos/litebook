@@ -25,10 +25,13 @@ def test_is_valid_price(order_book):
     assert order_book._is_valid_price(decimal.Decimal("0.10")) is True
     assert order_book._is_valid_price(decimal.Decimal("0.07")) is False
 
+    order_book.tick_size = None
+    assert order_book._is_valid_price(decimal.Decimal("1.23456789")) is True
+
 
 def test_enforce_market_depth_with_ticks(order_book):
-    # Add orders within and outside the market depth (3 ticks)
-    order_book.market_depth = None  # Enforce depth to 3 ticks
+    # Add orders within and outside the market depth
+    order_book.market_depth = None
 
     buy_order1 = Order(
         OrderType.BUY, decimal.Decimal("10.00"), decimal.Decimal("5.0")
@@ -92,6 +95,73 @@ def test_enforce_market_depth_with_ticks(order_book):
     # Verify orders outside the depth are removed
     assert buy_order5.id not in order_book.open_orders
     assert sell_order5.id not in order_book.open_orders
+
+
+def test_enforce_market_depth_without_tick_size(order_book):
+    # Add orders within and outside the market depth
+    order_book.market_depth = 1
+    order_book.tick_size = None
+
+    buy_order1 = Order(
+        OrderType.BUY, decimal.Decimal("10.00"), decimal.Decimal("5.0")
+    )  # Best bid
+    buy_order2 = Order(
+        OrderType.BUY, decimal.Decimal("9.95"), decimal.Decimal("5.0")
+    )  # 1 tick below
+    buy_order3 = Order(
+        OrderType.BUY, decimal.Decimal("9.90"), decimal.Decimal("5.0")
+    )  # 2 ticks below
+    buy_order4 = Order(
+        OrderType.BUY, decimal.Decimal("9.85"), decimal.Decimal("5.0")
+    )  # 3 ticks below
+    buy_order5 = Order(
+        OrderType.BUY, decimal.Decimal("9.80"), decimal.Decimal("5.0")
+    )  # 4 ticks below (outside)
+
+    sell_order1 = Order(
+        OrderType.SELL, decimal.Decimal("10.20"), decimal.Decimal("5.0")
+    )  # Best ask
+    sell_order2 = Order(
+        OrderType.SELL, decimal.Decimal("10.25"), decimal.Decimal("5.0")
+    )  # 1 tick above
+    sell_order3 = Order(
+        OrderType.SELL, decimal.Decimal("10.30"), decimal.Decimal("5.0")
+    )  # 2 ticks above
+    sell_order4 = Order(
+        OrderType.SELL, decimal.Decimal("10.35"), decimal.Decimal("5.0")
+    )  # 3 ticks above
+    sell_order5 = Order(
+        OrderType.SELL, decimal.Decimal("10.40"), decimal.Decimal("5.0")
+    )  # 4 ticks above (outside)
+
+    order_book.add(buy_order1)
+    order_book.add(buy_order2)
+    order_book.add(buy_order3)
+    order_book.add(buy_order4)
+    order_book.add(buy_order5)
+
+    order_book.add(sell_order1)
+    order_book.add(sell_order2)
+    order_book.add(sell_order3)
+    order_book.add(sell_order4)
+    order_book.add(sell_order5)
+
+    # Enforce market depth
+    order_book.market_depth = 3
+    order_book._enforce_market_depth()
+
+    # Verify orders within the depth remain
+    assert buy_order1.id in order_book.open_orders
+    assert buy_order2.id in order_book.open_orders
+    assert buy_order3.id in order_book.open_orders
+    assert buy_order4.id in order_book.open_orders
+    assert buy_order5.id in order_book.open_orders
+
+    assert sell_order1.id in order_book.open_orders
+    assert sell_order2.id in order_book.open_orders
+    assert sell_order3.id in order_book.open_orders
+    assert sell_order4.id in order_book.open_orders
+    assert sell_order5.id in order_book.open_orders
 
 
 def test_remove_price_level(order_book):
