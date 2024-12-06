@@ -4,7 +4,6 @@ import datetime
 import decimal
 import enum
 import uuid
-
 from typing import NamedTuple
 
 

@@ -18,9 +18,10 @@ Run the script directly to execute the benchmark and print the results.
     python benchmark_order_book.py
 """
 
-import time
-import random
 import decimal
+import random
+import time
+
 from litebook.book import OrderBook
 from litebook.order import Order, OrderType
 

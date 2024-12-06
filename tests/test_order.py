@@ -1,11 +1,13 @@
 """Test the litebook.order module."""
 
-import pytest
 import decimal
-
 from datetime import datetime
 
-from litebook.order import Order, OrderType, OrderStatus
+import pytest
+
+from litebook.order import Order, OrderStatus, OrderType
+
+from .utils import check_import
 
 
 @pytest.fixture
@@ -60,6 +62,13 @@ def buy_order_lower_price():
         price=decimal.Decimal("95"),
         quantity=decimal.Decimal("10"),
     )
+
+
+def test_order_import():
+    assert check_import("litebook", "Order"), "Order import failed."
+    assert check_import("litebook", "OrderType"), "OrderType import failed."
+    assert check_import("litebook", "OrderStatus"), "OrderStatus import failed."
+    assert check_import("litebook", "Fill"), "Fill import failed."
 
 
 def test_order_creation(buy_order):

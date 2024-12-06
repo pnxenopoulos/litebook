@@ -1,16 +1,23 @@
 """Test the litebook.book module."""
 
-import pytest
 import decimal
 import uuid
 
-from litebook.order import Order, OrderType, OrderStatus
+import pytest
+
 from litebook.book import OrderBook
+from litebook.order import Order, OrderStatus, OrderType
+
+from .utils import check_import
 
 
 @pytest.fixture
 def order_book() -> OrderBook:
     return OrderBook(tick_size=decimal.Decimal("0.05"), market_depth=100)
+
+
+def test_orderbook_import():
+    assert check_import("litebook", "OrderBook"), "OrderBook import failed."
 
 
 def test_orderbook_initialization(order_book):

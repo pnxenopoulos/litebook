@@ -1,6 +1,7 @@
 import decimal
-import sortedcontainers
 import uuid
+
+import sortedcontainers
 
 import litebook.order
 
