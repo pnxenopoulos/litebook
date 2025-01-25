@@ -1,4 +1,4 @@
-"""Test the litebook.order module."""
+"""Test the litebook Order module."""
 
 import decimal
 from datetime import datetime

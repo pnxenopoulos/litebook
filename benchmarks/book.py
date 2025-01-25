@@ -1,5 +1,5 @@
 """
-Module for benchmarking the litebook.book.OrderBook class.
+Module for benchmarking the litebook.OrderBook class.
 
 This script benchmarks the performance of the `OrderBook.add()` method by simulating
 the addition of a large number of pre-generated orders.
@@ -37,9 +37,9 @@ def generate_orders(num_orders: int, price_range: tuple[int, int]) -> list[Order
     """
     orders = []
     for _ in range(num_orders):
-        price = decimal.Decimal(random.randint(*price_range))
-        quantity = decimal.Decimal(random.randint(1, 10))
-        order_type = random.choice([OrderType.BUY, OrderType.SELL])
+        price = random.randint(*price_range)
+        quantity = random.randint(1, 10)
+        order_type = random.choice([OrderType.Buy, OrderType.Sell])
         orders.append(Order(order_type, price, quantity))
     return orders
 
@@ -82,5 +82,5 @@ def benchmark_order_book_matching(
 
 
 if __name__ == "__main__":
-    print("Benchmarking litebook.book.OrderBook performance:\n")
+    print("Benchmarking litebook.OrderBook performance:\n")
     benchmark_order_book_matching()

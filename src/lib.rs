@@ -84,8 +84,18 @@ impl Order {
     }
 
     #[getter]
-    pub fn get_id(&self) -> &str {
+    pub fn id(&self) -> &str {
         &self.id
+    }
+
+    #[getter]
+    pub fn price(&self) -> &f64 {
+        &self.price
+    }
+
+    #[getter]
+    pub fn quantity(&self) -> &f64 {
+        &self.quantity
     }
 
     #[getter]
@@ -94,8 +104,8 @@ impl Order {
     }
 
     #[getter]
-    pub fn get_timestamp(&self) -> u64 {
-        self.timestamp
+    pub fn timestamp(&self) -> &u64 {
+        &self.timestamp
     }
 
     pub fn matches(&self, other: &Order) -> bool {
@@ -162,7 +172,7 @@ impl OrderBook {
         }
     }
 
-    pub fn add_order(&mut self, order: Order) {
+    pub fn add(&mut self, order: Order) {
         match order.side {
             OrderType::Buy => self.buy_orders.push(order),
             OrderType::Sell => self.sell_orders.push(order),

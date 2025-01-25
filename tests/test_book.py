@@ -1,4 +1,4 @@
-"""Test the litebook.book module."""
+"""Test the litebook Order, OrderBook, OrderStatus, OrderType modules."""
 
 import pytest
 from litebook import Order, OrderBook, OrderStatus, OrderType
