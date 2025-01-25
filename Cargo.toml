@@ -1,0 +1,13 @@
+[package]
+name = "litebook-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = { version = "0.4.39", features = ["serde"] }
+maturin = "1.8.1"
+pyo3 = { version = "0.23.4", features = ["extension-module"] }
+serde = { version = "1.0.217", features = ["derive"] }
+uuid = { version = "1.12.1", features = ["serde", "v4"] }

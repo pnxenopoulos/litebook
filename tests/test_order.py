@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pytest
 
-from litebook.order import Order, OrderStatus, OrderType
+from litebook import Order, OrderStatus, OrderType
 
 from .utils import check_import
 

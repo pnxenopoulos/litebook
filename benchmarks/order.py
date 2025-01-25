@@ -42,10 +42,10 @@ def benchmark_order_initialization():
 def benchmark_order_comparison():
     """Benchmark the __lt__ method of the Order class."""
     setup = (
-        "from litebook.order import Order, OrderType; "
+        "from litebook import Order, OrderType; "
         "import decimal; "
-        "order1 = Order(OrderType.BUY, decimal.Decimal('100.00'), decimal.Decimal('10.00')); "
-        "order2 = Order(OrderType.SELL, decimal.Decimal('90.00'), decimal.Decimal('5.00'))"
+        "order1 = Order(OrderType.BUY,100.00, 10.00); "
+        "order2 = Order(OrderType.SELL, 90.00, 5.00)"
     )
     stmt = "order1 < order2"
     executions = 100000
@@ -58,10 +58,9 @@ def benchmark_order_comparison():
 def benchmark_order_matching():
     """Benchmark the matches method of the Order class."""
     setup = (
-        "from litebook.order import Order, OrderType; "
-        "import decimal; "
-        "buy_order = Order(OrderType.BUY, decimal.Decimal('100.00'), decimal.Decimal('10.00')); "
-        "sell_order = Order(OrderType.SELL, decimal.Decimal('95.00'), decimal.Decimal('5.00'))"
+        "from litebook import Order, OrderType; "
+        "buy_order = Order(OrderType.BUY,100.00, 10.00); "
+        "sell_order = Order(OrderType.SELL, 90.00, 5.00)"
     )
     stmt = "buy_order.matches(sell_order)"
     executions = 100000
@@ -74,10 +73,10 @@ def benchmark_order_matching():
 def benchmark_order_fill():
     """Benchmark the fill method of the Order class."""
     setup = (
-        "from litebook.order import Order, OrderType; "
+        "from litebook import Order, OrderType; "
         "import decimal; "
-        "buy_order = Order(OrderType.BUY, decimal.Decimal('100.00'), decimal.Decimal('10.00')); "
-        "sell_order = Order(OrderType.SELL, decimal.Decimal('95.00'), decimal.Decimal('5.00'))"
+        "buy_order = Order(OrderType.BUY,100.00, 10.00); "
+        "sell_order = Order(OrderType.SELL, 90.00, 5.00)"
     )
     stmt = "buy_order.fill(sell_order)"
     executions = 100000

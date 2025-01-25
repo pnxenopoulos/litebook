@@ -22,8 +22,7 @@ import decimal
 import random
 import time
 
-from litebook.book import OrderBook
-from litebook.order import Order, OrderType
+from litebook import Order, OrderBook, OrderType
 
 
 def generate_orders(num_orders: int, price_range: tuple[int, int]) -> list[Order]:
