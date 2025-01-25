@@ -36,16 +36,16 @@ jobs:
       - name: Set up Python
         run: uv python install ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: uv sync --all-extras --dev
 
       - name: Ruff
         run: uv run ruff check --select I .
 
-      - name: Build Rust application
+      - name: Build
         run: maturin develop --uv --release
 
-      - name: Pytest & Coverage
+      - name: Test
         run: |
           uv run pytest --durations=10
 

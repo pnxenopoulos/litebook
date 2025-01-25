@@ -1,7 +1,6 @@
 """Test the litebook.book module."""
 
 import pytest
-
 from litebook import Order, OrderBook, OrderStatus, OrderType
 
 from .utils import check_import
