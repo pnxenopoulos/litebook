@@ -56,7 +56,9 @@ def test_order_creation(buy_order):
     assert isinstance(buy_order.timestamp, int)
 
 
-def test_order_matching_logic(buy_order, sell_order, sell_order_higher_price):
+def test_order_matching_logic(
+    buy_order, sell_order, buy_order_higher_price, sell_order_higher_price
+):
     """Test the can_match method for different order combinations."""
     # Orders at same price should match
     assert buy_order.can_match(sell_order)
@@ -107,10 +109,12 @@ def test_partial_fills(order_book):
     fill = fills[0]
     assert fill.quantity == 5.0
     assert fill.price == 100.0
-    assert buy_order.quantity == 5.0  # Remaining quantity
-    assert sell_order.quantity == 0.0  # Fully filled
-    assert buy_order.status == lb.OrderStatus.Open
-    assert sell_order.status == lb.OrderStatus.Filled
+    buy_order_in_book = order_book.get_order(buy_order.id)
+    assert buy_order_in_book.quantity == 5.0  # Remaining quantity
+    assert buy_order_in_book.status == lb.OrderStatus.Open
+    sell_order_in_book = order_book.get_order(sell_order.id)
+    assert sell_order_in_book.quantity == 0.0  # Fully filled
+    assert sell_order_in_book.status == lb.OrderStatus.Filled
 
 
 def test_no_fill_for_non_matching_orders(order_book):

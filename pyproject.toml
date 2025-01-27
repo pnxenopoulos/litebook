@@ -10,9 +10,7 @@ license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = [
-    "maturin[patchelf]>=1.8.1",
-]
+dependencies = []
 
 [project.urls]
 repository = "https://github.com/pnxenopoulos/litebook"
