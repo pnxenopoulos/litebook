@@ -37,13 +37,16 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install Python dependencies
-        run: uv sync --all-extras --dev
+        run: |
+          uv sync --all-extras --dev
 
       - name: Ruff
         run: uv run ruff check --select I .
 
       - name: Build
-        run: maturin develop --uv --release
+        run: |
+          pip install maturin[patchelf]
+          maturin develop --uv --release
 
       - name: Test
         run: |
