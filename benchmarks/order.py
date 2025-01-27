@@ -32,7 +32,7 @@ def benchmark_order_initialization():
     """
     setup = """
 from litebook import OrderBook, OrderType
-book = OrderBook()  # Uses default tick_size of 0.01
+book = OrderBook(tick_size=0.01)
 """
     # Creating an order now goes through the OrderBook
     stmt = "book.create_order(OrderType.Buy, 100.50, 10.0)"
@@ -53,7 +53,7 @@ def benchmark_order_matching():
     """
     setup = """
 from litebook import OrderBook, OrderType
-book = OrderBook()  # Uses default tick_size of 0.01
+book = OrderBook(tick_size=0.01)
 buy_order = book.create_order(OrderType.Buy, 100.50, 10.0)
 sell_order = book.create_order(OrderType.Sell, 100.40, 5.0)
 """

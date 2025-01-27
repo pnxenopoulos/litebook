@@ -46,6 +46,14 @@ jobs:
       - name: Set up Python
         run: uv python install ${{ matrix.python-version }}
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', '**/pyproject.toml', '**/setup.cfg') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install Python dependencies
         run: |
           uv sync --all-extras --dev
