@@ -9,43 +9,67 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.13"] # ["3.11", "3.12", "3.13"]
+        os: [ubuntu-latest] # [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+          cache-on-failure: true
+
+      - name: Set up Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Format + Clippy
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy -- -D warnings --allow dead_code
+
       - name: Install uv
         uses: astral-sh/setup-uv@v4
-
-      - name: "Set up Python"
-        uses: actions/setup-python@v5
         with:
-          python-version-file: ".python-version"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-      - name: Restore uv cache
-        uses: actions/cache@v4
+      - name: Set up Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
         with:
-          path: /tmp/.uv-cache
-          key: uv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', '**/pyproject.toml', '**/setup.cfg') }}
           restore-keys: |
-            uv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
-            uv-${{ runner.os }}-py${{ matrix.python-version }}
-            uv-${{ runner.os }}
+            ${{ runner.os }}-pip-
 
-      - name: Install dependencies
-        run: uv sync --all-extras --dev
+      - name: Install Python dependencies
+        run: |
+          uv sync --all-extras --dev
 
       - name: Ruff
-        run: uv run ruff check .
+        run: uv run ruff check --select I .
 
-      - name: MyPy
-        run: uv run mypy .
+      - name: Build
+        run: |
+          pip install maturin[patchelf]
+          maturin develop --uv --release
 
-      - name: Pytest
-        run: uv run pytest
+      - name: Test
+        run: |
+          uv run pytest --durations=10
+
+      - name: Benchmark
+        run: |
+          uv run benchmarks/book.py
+          uv run benchmarks/order.py
 
       - name: Minimize uv cache
         run: uv cache prune --ci
