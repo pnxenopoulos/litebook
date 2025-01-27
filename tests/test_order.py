@@ -1,7 +1,7 @@
 """Test the litebook Order module."""
 
-import pytest
 import litebook as lb
+import pytest
 
 
 @pytest.fixture
