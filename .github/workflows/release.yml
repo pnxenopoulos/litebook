@@ -6,32 +6,77 @@ on:
       - "v*.*.*" # Triggers workflow only when a tag matching this pattern is pushed
 
 jobs:
-  build-and-publish:
-    runs-on: "ubuntu-latest"
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        target: [x86, x64]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-      - name: "Install uv"
-        uses: astral-sh/setup-uv@v4
+      - if: matrix.python-version == '3.13'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+          architecture: ${{ matrix.target }}
 
-      - name: Set up Python
-        run: uv python install 3.11
-
-      - name: "Build"
-        run: uv build
-
-      - name: "Publish to Test PyPi"
+      - name: Build Wheels
+        uses: PyO3/maturin-action@v1
         env:
-          TEST_PYPI_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: uv publish --publish-url https://test.pypi.org/legacy/ --token $TEST_PYPI_TOKEN
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          command: publish
+          target: ${{ matrix.target }}
+          args: -i ${{ matrix.python-version }} --no-sdist --skip-existing -m Cargo.toml
 
-      - name: "Verify Test PyPI installation"
-        run: |
-          uv run -- pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple litebook==$(uv python -c "import litebook; print(litebook.__version__)")
-          uv run -- python -c "import litebook; print('Package imported successfully from Test PyPI')"
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        target: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-      - name: "Publish to PyPI"
-        if: ${{ success() }}
+      - name: Build Wheels
+        uses: PyO3/maturin-action@v1
         env:
-          PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: uv publish --token $PYPI_TOKEN
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          command: publish
+          target: ${{ matrix.target }}
+          args: --no-default-features -i ${{ matrix.python-version }} --no-sdist --skip-existing -m Cargo.toml
+
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        target: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build Wheels
+        uses: PyO3/maturin-action@v1
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        with:
+          command: publish
+          target: ${{ matrix.target }}
+          args: -i ${{ matrix.python-version }} --no-sdist --skip-existing -m Cargo.toml
