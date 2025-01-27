@@ -1,172 +1,126 @@
 """Test the litebook Order module."""
 
-import decimal
-from datetime import datetime
-
 import pytest
-from litebook import Order, OrderStatus, OrderType
-
-from .utils import check_import
+import litebook as lb
 
 
 @pytest.fixture
-def buy_order():
-    return Order(
-        side=OrderType.BUY,
-        price=decimal.Decimal("100"),
-        quantity=decimal.Decimal("10"),
-    )
+def order_book():
+    """Create an OrderBook with a standard tick size for testing."""
+    return lb.OrderBook(tick_size=1.0)  # Using 1.0 for simpler price-to-tick conversion
 
 
 @pytest.fixture
-def sell_order():
-    return Order(
-        side=OrderType.SELL,
-        price=decimal.Decimal("100"),
-        quantity=decimal.Decimal("10"),
-    )
+def buy_order(order_book):
+    """Create a standard buy order at price 100."""
+    return order_book.create_order(lb.OrderType.Buy, price=100.0, quantity=10.0)
 
 
 @pytest.fixture
-def sell_order_higher_price():
-    return Order(
-        side=OrderType.SELL,
-        price=decimal.Decimal("105"),
-        quantity=decimal.Decimal("10"),
-    )
+def sell_order(order_book):
+    """Create a standard sell order at matching price 100."""
+    return order_book.create_order(lb.OrderType.Sell, price=100.0, quantity=10.0)
 
 
 @pytest.fixture
-def buy_order_higher_price():
-    return Order(
-        side=OrderType.BUY,
-        price=decimal.Decimal("105"),
-        quantity=decimal.Decimal("10"),
-    )
+def sell_order_higher_price(order_book):
+    """Create a sell order at a higher price that shouldn't match the standard buy."""
+    return order_book.create_order(lb.OrderType.Sell, price=105.0, quantity=10.0)
 
 
 @pytest.fixture
-def sell_order_lower_price():
-    return Order(
-        side=OrderType.SELL,
-        price=decimal.Decimal("95"),
-        quantity=decimal.Decimal("10"),
-    )
+def buy_order_higher_price(order_book):
+    """Create a buy order at a higher price that should match lower sells."""
+    return order_book.create_order(lb.OrderType.Buy, price=105.0, quantity=10.0)
 
 
 @pytest.fixture
-def buy_order_lower_price():
-    return Order(
-        side=OrderType.BUY,
-        price=decimal.Decimal("95"),
-        quantity=decimal.Decimal("10"),
-    )
+def sell_order_lower_price(order_book):
+    """Create a sell order at a lower price that should match standard buys."""
+    return order_book.create_order(lb.OrderType.Sell, price=95.0, quantity=10.0)
 
 
-def test_order_import():
-    assert check_import("litebook", "Order"), "Order import failed."
-    assert check_import("litebook", "OrderType"), "OrderType import failed."
-    assert check_import("litebook", "OrderStatus"), "OrderStatus import failed."
-    assert check_import("litebook", "Fill"), "Fill import failed."
+@pytest.fixture
+def buy_order_lower_price(order_book):
+    """Create a buy order at a lower price that shouldn't match standard sells."""
+    return order_book.create_order(lb.OrderType.Buy, price=95.0, quantity=10.0)
 
 
 def test_order_creation(buy_order):
-    assert buy_order.side == OrderType.BUY
-    assert buy_order.price == decimal.Decimal("100")
-    assert buy_order.quantity == decimal.Decimal("10")
-    assert buy_order.status == OrderStatus.OPEN
-    assert len(buy_order.fills) == 0
-    assert isinstance(buy_order.timestamp, datetime)
+    """Test that orders are created with correct attributes."""
+    assert buy_order.side == lb.OrderType.Buy
+    assert buy_order.price_in_ticks == 100  # Since tick_size is 1.0
+    assert buy_order.quantity == 10.0
+    assert buy_order.status == lb.OrderStatus.Open
+    assert isinstance(buy_order.id, str)
+    assert isinstance(buy_order.timestamp, int)
 
 
-def test_order_size(buy_order):
-    assert buy_order.size == (buy_order.price * buy_order.quantity)
+def test_order_matching_logic(buy_order, sell_order, sell_order_higher_price):
+    """Test the can_match method for different order combinations."""
+    # Orders at same price should match
+    assert buy_order.can_match(sell_order)
+    assert sell_order.can_match(buy_order)
+
+    # Orders at non-crossing prices shouldn't match
+    assert not buy_order.can_match(sell_order_higher_price)
+    assert not sell_order_higher_price.can_match(buy_order)
+
+    # Same-side orders shouldn't match
+    assert not buy_order.can_match(buy_order_higher_price)
+    assert not sell_order.can_match(sell_order_higher_price)
 
 
-def test_order_cancel(buy_order):
-    buy_order.cancel()
-    assert buy_order.status == OrderStatus.CANCELED
+def test_order_fills(order_book):
+    """Test the order filling process through the OrderBook."""
+    # Create orders that should match
+    buy_order = order_book.create_order(lb.OrderType.Buy, price=100.0, quantity=10.0)
+    sell_order = order_book.create_order(lb.OrderType.Sell, price=100.0, quantity=10.0)
 
+    # Add buy order first
+    order_book.add(buy_order)
 
-def test_order_comparison_buy(buy_order, buy_order_higher_price, buy_order_lower_price):
-    assert not buy_order < buy_order_higher_price
-    assert buy_order < buy_order_lower_price
+    # Add matching sell order and check fill
+    fills = order_book.add(sell_order)
 
-
-def test_order_comparison_sell(sell_order_lower_price, sell_order_higher_price):
-    assert sell_order_lower_price < sell_order_higher_price
-
-
-def test_order_matches(buy_order, sell_order, sell_order_higher_price):
-    assert buy_order.matches(sell_order)
-    assert not buy_order.matches(sell_order_higher_price)
-    assert not sell_order.matches(sell_order_higher_price)
-    assert not buy_order.matches(buy_order)
-
-
-def test_fill(buy_order, sell_order):
-    fill = buy_order.fill(sell_order)
-
-    # Check the fill details
-    assert fill is not None
-    assert fill.quantity == decimal.Decimal("10")
-    assert fill.price == decimal.Decimal("100")
+    assert len(fills) == 1
+    fill = fills[0]
+    assert fill.quantity == 10.0
+    assert fill.price == 100.0
     assert fill.buy_id == buy_order.id
     assert fill.sell_id == sell_order.id
-    assert isinstance(fill.timestamp, datetime)
-
-    # Check the updated order quantities
-    assert buy_order.quantity == decimal.Decimal("0")
-    assert sell_order.quantity == decimal.Decimal("0")
-
-    # Check the order statuses
-    assert buy_order.status == OrderStatus.FILLED
-    assert sell_order.status == OrderStatus.FILLED
-
-    # Check that the fills were added to the orders
-    assert len(buy_order.fills) == 1
-    assert len(sell_order.fills) == 1
-    assert buy_order.fills[0] == fill
-    assert sell_order.fills[0] == fill
+    assert isinstance(fill.timestamp, int)
 
 
-def test_no_fill_if_not_matching(buy_order, sell_order_higher_price):
-    fill = buy_order.fill(sell_order_higher_price)
+def test_partial_fills(order_book):
+    """Test partial order filling through the OrderBook."""
+    # Create a buy order for 10 units
+    buy_order = order_book.create_order(lb.OrderType.Buy, price=100.0, quantity=10.0)
+    # Create a smaller sell order for 5 units
+    sell_order = order_book.create_order(lb.OrderType.Sell, price=100.0, quantity=5.0)
 
-    assert fill is None
-    assert buy_order.quantity == decimal.Decimal("10")
-    assert sell_order_higher_price.quantity == decimal.Decimal("10")
-    assert buy_order.status == OrderStatus.OPEN
-    assert sell_order_higher_price.status == OrderStatus.OPEN
+    # Add orders and check partial fill
+    order_book.add(buy_order)
+    fills = order_book.add(sell_order)
+
+    assert len(fills) == 1
+    fill = fills[0]
+    assert fill.quantity == 5.0
+    assert fill.price == 100.0
+    assert buy_order.quantity == 5.0  # Remaining quantity
+    assert sell_order.quantity == 0.0  # Fully filled
+    assert buy_order.status == lb.OrderStatus.Open
+    assert sell_order.status == lb.OrderStatus.Filled
 
 
-def test_partial_fill(buy_order):
-    # Create an incoming order with a smaller quantity
-    incoming_order = Order(
-        side=OrderType.SELL,
-        price=decimal.Decimal("100"),
-        quantity=decimal.Decimal("5"),
-    )
+def test_no_fill_for_non_matching_orders(order_book):
+    """Test that non-matching orders don't create fills."""
+    buy_order = order_book.create_order(lb.OrderType.Buy, price=100.0, quantity=10.0)
+    sell_order = order_book.create_order(lb.OrderType.Sell, price=105.0, quantity=10.0)
 
-    fill = buy_order.fill(incoming_order)
+    order_book.add(buy_order)
+    fills = order_book.add(sell_order)
 
-    # Check the fill details
-    assert fill is not None
-    assert fill.quantity == decimal.Decimal("5")
-    assert fill.price == decimal.Decimal("100")
-    assert fill.buy_id == buy_order.id
-    assert fill.sell_id == incoming_order.id
-
-    # Check the updated order quantities
-    assert buy_order.quantity == decimal.Decimal("5")
-    assert incoming_order.quantity == decimal.Decimal("0")
-
-    # Check the order statuses
-    assert buy_order.status == OrderStatus.OPEN
-    assert incoming_order.status == OrderStatus.FILLED
-
-    # Check that the fills were added to the orders
-    assert len(buy_order.fills) == 1
-    assert len(incoming_order.fills) == 1
-    assert buy_order.fills[0] == fill
-    assert incoming_order.fills[0] == fill
+    assert len(fills) == 0
+    assert buy_order.status == lb.OrderStatus.Open
+    assert sell_order.status == lb.OrderStatus.Open

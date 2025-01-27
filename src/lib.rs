@@ -1,9 +1,11 @@
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-use std::time::{SystemTime, UNIX_EPOCH};
 
-// Enum for order type
+use std::collections::{BTreeMap, VecDeque};
+use std::time::{SystemTime, UNIX_EPOCH};
+use uuid::Uuid;
+
+/// Enum for order side
 #[pyclass(eq, eq_int)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderType {
@@ -11,7 +13,7 @@ pub enum OrderType {
     Sell,
 }
 
-// Enum for order status
+/// Enum for order status
 #[pyclass(eq, eq_int)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderStatus {
@@ -20,12 +22,12 @@ pub enum OrderStatus {
     Canceled,
 }
 
-// Fill structure
+/// A fill event records how two orders matched.
 #[pyclass]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Fill {
     quantity: f64,
-    price: f64,
+    price: f64, // We'll store the fill price as a float for reporting.
     buy_id: String,
     sell_id: String,
     timestamp: u64, // Nanoseconds since the Unix epoch
@@ -43,32 +45,65 @@ impl Fill {
             timestamp,
         }
     }
+
+    #[getter]
+    pub fn quantity(&self) -> f64 {
+        self.quantity
+    }
+
+    #[getter]
+    pub fn price(&self) -> f64 {
+        self.price
+    }
+
+    #[getter]
+    pub fn buy_id(&self) -> &str {
+        &self.buy_id
+    }
+
+    #[getter]
+    pub fn sell_id(&self) -> &str {
+        &self.sell_id
+    }
+
+    #[getter]
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
+    }
 }
 
-// Order structure
+/// An Order.  
+/// **Important**: We store `price_in_ticks` (i64) instead of a float price.  
 #[pyclass]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
     id: String,
     side: OrderType,
-    price: f64,
+    price_in_ticks: i64,
     quantity: f64,
     status: OrderStatus,
-    timestamp: u64, // Nanoseconds since the Unix epoch
+    timestamp: u64,
 }
 
 #[pymethods]
 impl Order {
+    /// Create a new order with a price in ticks
     #[new]
-    pub fn new(side: OrderType, price: f64, quantity: f64) -> PyResult<Self> {
-        if price <= 0.0 || quantity <= 0.0 {
+    pub fn new(side: OrderType, price_in_ticks: i64, quantity: f64) -> PyResult<Self> {
+        // Validate the inputs
+        if price_in_ticks <= 0 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "Price and quantity must be positive",
+                "price_in_ticks must be positive",
+            ));
+        }
+        if quantity <= 0.0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "quantity must be positive",
             ));
         }
 
-        let id = uuid::Uuid::new_v4().to_string();
-        let timestamp = SystemTime::now()
+        let id = Uuid::new_v4().to_string();
+        let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_nanos() as u64;
@@ -76,71 +111,61 @@ impl Order {
         Ok(Self {
             id,
             side,
-            price,
+            price_in_ticks,
             quantity,
             status: OrderStatus::Open,
-            timestamp,
+            timestamp: now,
         })
     }
 
-    #[getter]
-    pub fn id(&self) -> &str {
-        &self.id
-    }
-
-    #[getter]
-    pub fn price(&self) -> &f64 {
-        &self.price
-    }
-
-    #[getter]
-    pub fn quantity(&self) -> &f64 {
-        &self.quantity
-    }
-
-    #[getter]
-    pub fn is_open(&self) -> bool {
-        self.status == OrderStatus::Open
-    }
-
-    #[getter]
-    pub fn timestamp(&self) -> &u64 {
-        &self.timestamp
-    }
-
-    pub fn matches(&self, other: &Order) -> bool {
+    /// Check if this order can match with another order.
+    /// Returns true if:
+    /// 1. The orders are on opposite sides (buy vs sell)
+    /// 2. The buy price is greater than or equal to the sell price
+    #[pyo3(text_signature = "(self, other)")]
+    pub fn can_match(&self, other: &Order) -> bool {
         if self.side == other.side {
             return false;
         }
         match self.side {
-            OrderType::Buy => self.price >= other.price,
-            OrderType::Sell => self.price <= other.price,
+            // A buy matches if its price_in_ticks >= the sell's price_in_ticks
+            OrderType::Buy => self.price_in_ticks >= other.price_in_ticks,
+            // A sell matches if its price_in_ticks <= the buy's price_in_ticks
+            OrderType::Sell => self.price_in_ticks <= other.price_in_ticks,
         }
     }
 
-    pub fn fill(&mut self, incoming: &mut Order) -> Option<Fill> {
-        if !self.matches(incoming) {
+    /// Attempt to fill `self` with `incoming`. Returns Some(Fill) if a fill occurred.
+    fn fill(&mut self, incoming: &mut Order, tick_size: f64) -> Option<Fill> {
+        if !self.can_match(incoming) {
             return None;
         }
 
+        // Determine how much we can fill
         let fill_quantity = self.quantity.min(incoming.quantity);
+
+        // Decrement the quantities
         self.quantity -= fill_quantity;
         incoming.quantity -= fill_quantity;
 
-        if self.quantity == 0.0 {
+        // Mark orders as filled if quantity hits zero
+        if self.quantity <= 0.0 {
             self.status = OrderStatus::Filled;
         }
-        if incoming.quantity == 0.0 {
+        if incoming.quantity <= 0.0 {
             incoming.status = OrderStatus::Filled;
         }
 
-        let fill_price = if self.side == OrderType::Sell {
-            self.price
+        // By convention: if the resting order is a sell, use its price_in_ticks;
+        // otherwise use the incoming's price_in_ticks.
+        let final_ticks = if self.side == OrderType::Sell {
+            self.price_in_ticks
         } else {
-            incoming.price
+            incoming.price_in_ticks
         };
 
-        let timestamp = SystemTime::now()
+        let fill_price = (final_ticks as f64) * tick_size;
+        let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_nanos() as u64;
@@ -150,67 +175,195 @@ impl Order {
             fill_price,
             self.id.clone(),
             incoming.id.clone(),
-            timestamp,
+            now,
         ))
+    }
+
+    fn is_open(&self) -> bool {
+        self.status == OrderStatus::Open
+    }
+
+    /// Getters for Python
+    #[getter]
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    #[getter]
+    pub fn side(&self) -> OrderType {
+        self.side.clone()
+    }
+
+    #[getter]
+    pub fn price_in_ticks(&self) -> i64 {
+        self.price_in_ticks
+    }
+
+    #[getter]
+    pub fn quantity(&self) -> f64 {
+        self.quantity
+    }
+
+    #[getter]
+    pub fn status(&self) -> OrderStatus {
+        self.status.clone()
+    }
+
+    #[getter]
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
     }
 }
 
-// A container for the OrderBook
+/// A container for the OrderBook, keyed by integer ticks (i64).
+/// We do immediate matching in `add(...)`.
 #[pyclass]
 pub struct OrderBook {
-    buy_orders: Vec<Order>,
-    sell_orders: Vec<Order>,
+    buy_orders: BTreeMap<i64, VecDeque<Order>>,
+    sell_orders: BTreeMap<i64, VecDeque<Order>>,
+    tick_size: f64,
 }
 
 #[pymethods]
 impl OrderBook {
+    /// Create a new book with a given tick size. For example, if tick_size=0.01,
+    /// then a price of 123.45 is stored as 12345 ticks.
     #[new]
-    pub fn new() -> Self {
+    #[pyo3(text_signature = "($self, *, tick_size=0.01)")]
+    pub fn new(tick_size: f64) -> Self {
         Self {
-            buy_orders: vec![],
-            sell_orders: vec![],
+            buy_orders: BTreeMap::new(),
+            sell_orders: BTreeMap::new(),
+            tick_size,
         }
     }
 
-    pub fn add(&mut self, order: Order) {
-        match order.side {
-            OrderType::Buy => self.buy_orders.push(order),
-            OrderType::Sell => self.sell_orders.push(order),
-        }
-        self.sort_orders();
-    }
-
-    pub fn sort_orders(&mut self) {
-        self.buy_orders
-            .sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap_or(Ordering::Equal));
-        self.sell_orders
-            .sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap_or(Ordering::Equal));
-    }
-
-    pub fn match_orders(&mut self) -> Vec<Fill> {
-        let mut fills = vec![];
-
-        while let (Some(mut buy), Some(mut sell)) = (self.buy_orders.pop(), self.sell_orders.pop())
-        {
-            if let Some(fill) = buy.fill(&mut sell) {
-                fills.push(fill);
-            }
-            if buy.is_open() {
-                self.buy_orders.push(buy);
-            }
-            if sell.is_open() {
-                self.sell_orders.push(sell);
-            }
+    /// Create a new order in this book given a float price.
+    /// This handles converting the float price to ticks using this book's tick_size.
+    #[pyo3(text_signature = "(self, side, price, quantity)")]
+    pub fn create_order(&self, side: OrderType, price: f64, quantity: f64) -> PyResult<Order> {
+        if price <= 0.0 || quantity <= 0.0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Price and quantity must be positive",
+            ));
         }
 
-        self.sort_orders();
-        fills
+        let price_in_ticks = (price / self.tick_size).round() as i64;
+        if price_in_ticks <= 0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Resulting price_in_ticks must be positive",
+            ));
+        }
+
+        Order::new(side, price_in_ticks, quantity)
+    }
+
+    /// Add an existing Order (already constructed) and immediately attempt to match it.
+    /// Returns a list of Fills that occurred.
+    ///
+    /// For example, from Python:
+    ///
+    ///     order = Order(OrderType.Buy, 100.5, 10.0, 0.01)
+    ///     fills = orderbook.add(order)
+    ///
+    #[pyo3(text_signature = "(self, order)")]
+    pub fn add(&mut self, incoming_order: &mut Order) -> PyResult<Vec<Fill>> {
+        let mut fills = Vec::new();
+
+        // Validate some basic sanity on the incoming order (optional):
+        if incoming_order.price_in_ticks <= 0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Order has invalid price_in_ticks <= 0",
+            ));
+        }
+        if incoming_order.quantity <= 0.0 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "Order has non-positive quantity",
+            ));
+        }
+
+        // Match until the order is filled or no longer crosses
+        match incoming_order.side {
+            OrderType::Buy => {
+                while incoming_order.is_open() {
+                    let (best_sell_price, sell_queue) = match self.sell_orders.iter_mut().next() {
+                        Some((k, q)) => (*k, q),
+                        None => break,
+                    };
+                    if incoming_order.price_in_ticks < best_sell_price {
+                        break;
+                    }
+
+                    let mut resting_sell = sell_queue
+                        .pop_front()
+                        .expect("Queue is not empty if it exists in map");
+
+                    if let Some(fill) = resting_sell.fill(incoming_order, self.tick_size) {
+                        fills.push(fill);
+                    }
+
+                    if resting_sell.is_open() {
+                        sell_queue.push_front(resting_sell);
+                    }
+
+                    if sell_queue.is_empty() {
+                        self.sell_orders.remove(&best_sell_price);
+                    }
+                }
+
+                // Only store the order if it's still open
+                if incoming_order.is_open() {
+                    let price_ticks = incoming_order.price_in_ticks;
+                    self.buy_orders
+                        .entry(price_ticks)
+                        .or_default()
+                        .push_back(incoming_order.clone());
+                }
+            }
+
+            OrderType::Sell => {
+                while incoming_order.is_open() {
+                    let (best_buy_price, buy_queue) = match self.buy_orders.iter_mut().next_back() {
+                        Some((k, q)) => (*k, q),
+                        None => break,
+                    };
+                    if incoming_order.price_in_ticks > best_buy_price {
+                        break;
+                    }
+
+                    let mut resting_buy = buy_queue
+                        .pop_front()
+                        .expect("Queue is not empty if it exists in map");
+
+                    if let Some(fill) = resting_buy.fill(incoming_order, self.tick_size) {
+                        fills.push(fill);
+                    }
+
+                    // Update: Only push back if the order is still open
+                    if resting_buy.is_open() {
+                        buy_queue.push_front(resting_buy);
+                    }
+
+                    if buy_queue.is_empty() {
+                        self.buy_orders.remove(&best_buy_price);
+                    }
+                }
+            }
+        }
+
+        Ok(fills)
+    }
+
+    /// Return the tick size for informational purposes
+    #[getter]
+    pub fn tick_size(&self) -> f64 {
+        self.tick_size
     }
 }
 
 impl Default for OrderBook {
     fn default() -> Self {
-        Self::new()
+        Self::new(0.01)
     }
 }
 

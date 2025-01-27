@@ -18,29 +18,34 @@ Run the script directly to execute the benchmark and print the results.
     python benchmark_order_book.py
 """
 
-import decimal
 import random
 import time
 
-from litebook import Order, OrderBook, OrderType
+import litebook as lb
 
 
-def generate_orders(num_orders: int, price_range: tuple[int, int]) -> list[Order]:
+def generate_orders(
+    order_book: lb.OrderBook, num_orders: int, price_range: tuple[float, float]
+) -> list[lb.Order]:
     """Generate a list of random orders for benchmarking.
 
     Args:
+        order_book (OrderBook): The order book to create orders through.
         num_orders (int): Number of orders to generate.
-        price_range (tuple[int, int]): Range of prices for the orders.
+        price_range (tuple[float, float]): Range of prices for the orders.
 
     Returns:
         list[Order]: A list of generated Order objects.
     """
     orders = []
     for _ in range(num_orders):
-        price = random.randint(*price_range)
+        # Generate random float prices instead of integers now
+        price = random.uniform(*price_range)
         quantity = random.randint(1, 10)
-        order_type = random.choice([OrderType.Buy, OrderType.Sell])
-        orders.append(Order(order_type, price, quantity))
+        order_type = random.choice([lb.OrderType.Buy, lb.OrderType.Sell])
+        # Create the order through the order book to handle tick conversion
+        order = order_book.create_order(order_type, price, quantity)
+        orders.append(order)
     return orders
 
 
@@ -58,16 +63,17 @@ def benchmark_order_book_matching(
         f"and processing {benchmark_orders} additional orders....\n"
     )
 
-    # Initialize the OrderBook instance
-    order_book = OrderBook()
+    # Initialize the OrderBook instance with default tick_size of 0.01
+    order_book = lb.OrderBook()
 
     # Seed the order book with initial orders
-    seed_orders = generate_orders(initial_orders, (1, 10))
+    # Use float prices that are close to the original integer prices
+    seed_orders = generate_orders(order_book, initial_orders, (1.0, 10.0))
     for order in seed_orders:
         order_book.add(order)
 
-    # Generate benchmark orders
-    benchmark_orders_list = generate_orders(benchmark_orders, (50, 150))
+    # Generate benchmark orders with float prices
+    benchmark_orders_list = generate_orders(order_book, benchmark_orders, (50.0, 150.0))
 
     # Benchmark only the .add() calls
     start_time = time.time()
