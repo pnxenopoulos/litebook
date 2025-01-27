@@ -64,7 +64,7 @@ def benchmark_order_book_matching(
     )
 
     # Initialize the OrderBook instance with default tick_size of 0.01
-    order_book = lb.OrderBook()
+    order_book = lb.OrderBook(tick_size=0.01)
 
     # Seed the order book with initial orders
     # Use float prices that are close to the original integer prices

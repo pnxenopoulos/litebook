@@ -46,6 +46,13 @@ impl Fill {
         }
     }
 
+    fn __repr__(&self) -> String {
+        format!(
+            "[{:.2} @ {:.2}] Buy: {}, Sell: {}, Filled at {}",
+            self.quantity, self.price, self.buy_id, self.sell_id, self.timestamp
+        )
+    }
+
     #[getter]
     pub fn quantity(&self) -> f64 {
         self.quantity
@@ -181,6 +188,14 @@ impl Order {
 
     fn is_open(&self) -> bool {
         self.status == OrderStatus::Open
+    }
+
+    fn __repr__(&self) -> String {
+        // Convert price from ticks to actual price
+        format!(
+            "[{:?} {} @ {}] [{}, placed at {}]",
+            self.side, self.quantity, self.price_in_ticks, self.id, self.timestamp
+        )
     }
 
     /// Getters for Python
@@ -352,6 +367,87 @@ impl OrderBook {
         }
 
         Ok(fills)
+    }
+
+    // Helper method to get best bid
+    fn best_bid(&self) -> Option<(i64, f64)> {
+        self.buy_orders.iter().next_back().map(|(price, queue)| {
+            (
+                *price,
+                queue.front().map(|order| order.quantity).unwrap_or(0.0),
+            )
+        })
+    }
+
+    // Helper method to get best ask
+    fn best_ask(&self) -> Option<(i64, f64)> {
+        self.sell_orders.iter().next().map(|(price, queue)| {
+            (
+                *price,
+                queue.front().map(|order| order.quantity).unwrap_or(0.0),
+            )
+        })
+    }
+
+    // Helper method to calculate total buy volume
+    fn buy_volume(&self) -> f64 {
+        self.buy_orders
+            .values()
+            .flat_map(|queue| queue.iter())
+            .map(|order| order.quantity)
+            .sum()
+    }
+
+    // Helper method to calculate total sell volume
+    fn sell_volume(&self) -> f64 {
+        self.sell_orders
+            .values()
+            .flat_map(|queue| queue.iter())
+            .map(|order| order.quantity)
+            .sum()
+    }
+
+    /// Calculate the current spread in the order book.
+    /// Returns None if there are no orders on either side.
+    /// The spread is returned in the same units as the prices (not ticks).
+    #[pyo3(text_signature = "($self)")]
+    fn spread(&self) -> Option<f64> {
+        match (self.best_bid(), self.best_ask()) {
+            (Some((bid_price, _)), Some((ask_price, _))) => {
+                // Convert from tick difference to price difference
+                let spread_in_ticks = ask_price - bid_price;
+                Some(spread_in_ticks as f64 * self.tick_size)
+            }
+            _ => None,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        let best_bid = self
+            .best_bid()
+            .map(|(price, qty)| format!("{:.2} @ {}", qty, price * self.tick_size as i64))
+            .unwrap_or_else(|| "None".to_string());
+
+        let best_ask = self
+            .best_ask()
+            .map(|(price, qty)| format!("{:.2} @ {}", qty, price * self.tick_size as i64))
+            .unwrap_or_else(|| "None".to_string());
+
+        let spread = match (self.best_bid(), self.best_ask()) {
+            (Some((bid, _)), Some((ask, _))) => {
+                format!("{:.4}", (ask - bid) as f64 * self.tick_size)
+            }
+            _ => "None".to_string(),
+        };
+
+        format!(
+            "Best Bid: {}, Best Ask: {} (Spread: {})\nOpen Buy Volume: {:.2}, Open Sell Volume: {:.2}",
+            best_bid,
+            best_ask,
+            spread,
+            self.buy_volume(),
+            self.sell_volume()
+        )
     }
 
     /// Return the tick size for informational purposes
