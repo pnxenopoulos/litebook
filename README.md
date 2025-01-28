@@ -4,14 +4,14 @@
 
 A fast and performant limit order book in Python utilizing a Rust backend. Install it with
 
-```
+```shell
 pip install litebook
 ```
 
 ## Using litebook
 Get started with litebook using the following example:
 
-```
+```python
 import litebook as lb
 
 # Create an OrderBook

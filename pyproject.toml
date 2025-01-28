@@ -4,12 +4,12 @@ build-backend = "maturin"
 
 [project]
 name = "litebook"
-version = "0.0.0"
-description = "A pure-Python limit order book with tick sizes, market depth and visualization."
+version = "0.0.1b1"
+description = "A fast limit order book in Python utilizing a Rust backend"
 license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = []
 
 [project.urls]

@@ -10,6 +10,12 @@ def order_book() -> lb.OrderBook:
     return lb.OrderBook(tick_size=0.05)
 
 
+def test_default_orderbook():
+    """Test that the default OrderBook is created correctly."""
+    book = lb.OrderBook()
+    assert book.tick_size == 0.01
+
+
 def test_order_creation():
     """Test that orders can be created through the OrderBook."""
     book = lb.OrderBook(tick_size=0.05)

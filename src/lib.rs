@@ -260,7 +260,7 @@ pub struct OrderBook {
 impl OrderBook {
     /// Creates a new OrderBook with a specified tick size.
     #[new]
-    #[pyo3(text_signature = "($self, *, tick_size=0.01)")]
+    #[pyo3(signature = (tick_size=0.01))]
     pub fn new(tick_size: f64) -> Self {
         Self {
             buy_orders: BTreeMap::new(),
