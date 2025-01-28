@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "litebook"
-version = "0.0.1b2"
+version = "0.0.1b3"
 description = "A fast limit order book in Python utilizing a Rust backend"
 license = {text = "MIT License"}
 keywords = ["limit order book", "order book"]

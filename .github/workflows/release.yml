@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        target: [x86_64, aarch64]
+        target: [x86_64]  # aarch64
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
@@ -50,12 +50,6 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-
-      - name: Install cross-compilation tools
-        if: matrix.target == 'aarch64'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Build Wheels
         uses: PyO3/maturin-action@v1
