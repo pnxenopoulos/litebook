@@ -29,5 +29,7 @@ fills = book.add(sell_order)
 print(fill)
 
 # Check the status of the remainder of the open buy order
+# DO NOT rely on the previous `buy_order` or `sell_order` objects
+# to be updated! Fetch them from the book, instead
 open_buy_order = orderbook.get_order(buy_order.id)
 ```
