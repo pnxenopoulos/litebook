@@ -50,6 +50,8 @@ prints the imported native extension path, and runs tests only after the build
 succeeds. Run it again after changing Rust code. Pass pytest options through the
 script, for example `bash scripts/rebuild.sh -q`.
 
+See [benchmarks/README.md](benchmarks/README.md) for native and Python baseline commands.
+
 Rust tools can run without the extension feature; Maturin enables it for Python
 builds. Track the review sequence and validation in [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
 

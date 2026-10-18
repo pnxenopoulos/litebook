@@ -10,7 +10,7 @@ Review and merge them in order; later branches start from the preceding branch.
 | --- | --- | --- | --- |
 | 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | [PR #7](https://github.com/pnxenopoulos/litebook/pull/7) ready for review |
 | 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | [PR #8](https://github.com/pnxenopoulos/litebook/pull/8) ready for review |
-| 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | Planned |
+| 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | In progress |
 
 Update this file in each PR with its link, validation, completed work, and remaining
 work. PRs remain unmerged until reviewed.
@@ -55,13 +55,13 @@ independent list-based model. See [behavior rules](docs/semantics.md).
 
 ## Chunk 3 baseline benchmarks
 
-- [ ] Add Criterion benchmarks with fresh mutable fixtures, consumed outputs, and
+- [x] Add Criterion benchmarks with fresh mutable fixtures, consumed outputs, and
   explicit operation counts.
-- [ ] Cover resting insertion, cancellation at varied queue depths, partial fills,
+- [x] Cover resting insertion, cancellation at varied queue depths, partial fills,
   multi-level sweeps, and deterministic mixed event replay.
-- [ ] Measure Python creation plus submission separately from pre-created-order
+- [x] Measure Python creation plus submission separately from pre-created-order
   submission; reset state for each sample.
-- [ ] Use monotonic timers, warmup, repeated samples, fixed seeds, and machine/build
+- [x] Use monotonic timers, warmup, repeated samples, fixed seeds, and machine/build
   metadata. Keep per-event latency sampling separate from throughput timing.
 - [ ] Record sustained replay memory behavior and explain retained filled-order history.
 - [ ] Smoke-test benchmark fixtures and run representative release baselines.
