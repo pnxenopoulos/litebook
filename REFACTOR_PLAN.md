@@ -9,7 +9,7 @@ Review and merge them in order; later branches start from the preceding branch.
 | Chunk | Branch | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | [PR #7](https://github.com/pnxenopoulos/litebook/pull/7) ready for review |
-| 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | In progress |
+| 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | [PR #8](https://github.com/pnxenopoulos/litebook/pull/8) ready for review |
 | 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | Planned |
 
 Update this file in each PR with its link, validation, completed work, and remaining
@@ -44,7 +44,7 @@ with Rust 1.96.1. Rust formatting, Clippy, and Python import-order checks pass.
 - [x] Fix fractional-price book display and test it.
 - [x] Add deterministic regressions and randomized comparison with a simple reference
   model, checking quantities, fills, FIFO, and book/index consistency.
-- [ ] Rebuild, run required checks, and open PR.
+- [x] Rebuild, run required checks, and open PR.
 
 Duplicate-ID protection covers IDs still known to the book. Permanent rejection of
 all previously canceled IDs would require retained tombstones and is deferred.
