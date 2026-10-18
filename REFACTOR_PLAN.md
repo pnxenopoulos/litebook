@@ -8,7 +8,7 @@ Review and merge them in order; later branches start from the preceding branch.
 
 | Chunk | Branch | Scope | Status |
 | --- | --- | --- | --- |
-| 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | In progress |
+| 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | [PR #7](https://github.com/pnxenopoulos/litebook/pull/7) ready for review |
 | 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | Planned |
 | 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | Planned |
 
@@ -26,7 +26,7 @@ work. PRs remain unmerged until reviewed.
 - [x] Treat Maturin as a locked Python development/build tool, not a Rust runtime dependency.
 - [x] Add a rebuild script that fails before tests if rebuilding fails.
 - [x] Regenerate lockfiles, rebuild, and validate the imported extension.
-- [ ] Open PR and record validation.
+- [x] Open PR and record validation.
 
 Validation: a fresh release rebuild passes all 13 existing Python tests on CPython 3.11.8
 with Rust 1.96.1. Rust formatting, Clippy, and Python import-order checks pass.
