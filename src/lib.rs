@@ -5,6 +5,15 @@ use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
+fn validate_positive_finite(value: f64, name: &str) -> PyResult<()> {
+    if !value.is_finite() || value <= 0.0 {
+        return Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "{name} must be positive and finite"
+        )));
+    }
+    Ok(())
+}
+
 /// Represents the side of an order: either Buy or Sell.
 #[pyclass(eq, eq_int)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -110,7 +119,7 @@ impl Order {
     /// - `quantity`: The quantity of the order.
     ///
     /// # Errors
-    /// - Returns an error if `price_in_ticks` or `quantity` is non-positive.
+    /// - Returns an error if `price_in_ticks` is non-positive or `quantity` is not positive and finite.
     #[new]
     pub fn new(side: OrderType, price_in_ticks: i64, quantity: f64) -> PyResult<Self> {
         if price_in_ticks <= 0 {
@@ -118,11 +127,7 @@ impl Order {
                 "price_in_ticks must be positive",
             ));
         }
-        if quantity <= 0.0 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "quantity must be positive",
-            ));
-        }
+        validate_positive_finite(quantity, "quantity")?;
 
         let id = Uuid::new_v4().to_string();
         let now = SystemTime::now()
@@ -149,7 +154,7 @@ impl Order {
     /// - `true` if the orders are on opposite sides and the prices are compatible.
     #[pyo3(text_signature = "(self, other)")]
     pub fn can_match(&self, other: &Order) -> bool {
-        if self.side == other.side {
+        if !self.is_open() || !other.is_open() || self.side == other.side {
             return false;
         }
         match self.side {
@@ -160,10 +165,21 @@ impl Order {
 
     /// Attempts to fill this order with another incoming order.
     /// Updates the quantities and statuses of both orders.
-    fn fill(&mut self, incoming: &mut Order, tick_size: f64) -> Option<Fill> {
+    fn fill(&mut self, incoming: &mut Order, tick_size: f64) -> PyResult<Option<Fill>> {
+        validate_positive_finite(tick_size, "tick_size")?;
         if !self.can_match(incoming) {
-            return None;
+            return Ok(None);
         }
+
+        // Preserve seller-limit execution prices for both resting sides.
+        let (buy_id, sell_id, final_ticks) = match self.side {
+            OrderType::Buy => (&self.id, &incoming.id, incoming.price_in_ticks),
+            OrderType::Sell => (&incoming.id, &self.id, self.price_in_ticks),
+        };
+        let fill_price = (final_ticks as f64) * tick_size;
+        validate_positive_finite(fill_price, "fill price")?;
+        let buy_id = buy_id.clone();
+        let sell_id = sell_id.clone();
 
         let fill_quantity = self.quantity.min(incoming.quantity);
         self.quantity -= fill_quantity;
@@ -176,25 +192,18 @@ impl Order {
             incoming.status = OrderStatus::Filled;
         }
 
-        let final_ticks = if self.side == OrderType::Sell {
-            self.price_in_ticks
-        } else {
-            incoming.price_in_ticks
-        };
-
-        let fill_price = (final_ticks as f64) * tick_size;
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_nanos() as u64;
 
-        Some(Fill::new(
+        Ok(Some(Fill::new(
             fill_quantity,
             fill_price,
-            self.id.clone(),
-            incoming.id.clone(),
+            buy_id,
+            sell_id,
             now,
-        ))
+        )))
     }
 
     /// Checks if the order is still open.
@@ -261,37 +270,53 @@ impl OrderBook {
     /// Creates a new OrderBook with a specified tick size.
     #[new]
     #[pyo3(signature = (tick_size=0.01))]
-    pub fn new(tick_size: f64) -> Self {
-        Self {
+    pub fn new(tick_size: f64) -> PyResult<Self> {
+        validate_positive_finite(tick_size, "tick_size")?;
+        Ok(Self {
             buy_orders: BTreeMap::new(),
             sell_orders: BTreeMap::new(),
             orders: HashMap::new(),
             tick_size,
-        }
+        })
     }
 
     /// Creates an order (but does not add to the book) based off the book's tick size.
     #[pyo3(text_signature = "(self, side, price, quantity)")]
     pub fn create_order(&self, side: OrderType, price: f64, quantity: f64) -> PyResult<Order> {
-        if price <= 0.0 || quantity <= 0.0 {
+        validate_positive_finite(price, "price")?;
+        validate_positive_finite(quantity, "quantity")?;
+        let rounded_ticks = (price / self.tick_size).round();
+        // i64::MAX rounds up to 2^63 as f64, so this upper bound is exclusive.
+        if !rounded_ticks.is_finite() || rounded_ticks < 1.0 || rounded_ticks >= i64::MAX as f64 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "Price and quantity must be positive",
+                "rounded price must fit in positive i64 ticks",
             ));
         }
+        let price_in_ticks = rounded_ticks as i64;
 
-        let price_in_ticks = (price / self.tick_size).round() as i64;
-        if price_in_ticks <= 0 {
-            return Err(pyo3::exceptions::PyValueError::new_err(
-                "Resulting price_in_ticks must be positive",
-            ));
-        }
-
+        validate_positive_finite(price_in_ticks as f64 * self.tick_size, "rounded price")?;
         Order::new(side, price_in_ticks, quantity)
     }
 
     /// Adds an order to the book, attempting to match it with resting orders.
     #[pyo3(text_signature = "(self, order)")]
     pub fn add(&mut self, mut incoming_order: Order) -> PyResult<Vec<Fill>> {
+        if self.orders.contains_key(&incoming_order.id) {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "order ID is already known to this book",
+            ));
+        }
+        if !incoming_order.is_open() {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "only open orders can be submitted",
+            ));
+        }
+        validate_positive_finite(incoming_order.quantity, "quantity")?;
+        // Validate before removing a resting order: fill reporting must stay finite.
+        validate_positive_finite(
+            incoming_order.price_in_ticks as f64 * self.tick_size,
+            "price",
+        )?;
         let mut fills = Vec::new();
 
         match incoming_order.side {
@@ -314,7 +339,9 @@ impl OrderBook {
                             .expect("Queue is not empty if it exists in map");
 
                         // Process the fill
-                        if let Some(fill) = resting_sell.fill(&mut incoming_order, self.tick_size) {
+                        if let Some(fill) =
+                            resting_sell.fill(&mut incoming_order, self.tick_size)?
+                        {
                             fills.push(fill);
                         }
 
@@ -363,7 +390,7 @@ impl OrderBook {
                             .expect("Queue is not empty if it exists in map");
 
                         // Process the fill
-                        if let Some(fill) = resting_buy.fill(&mut incoming_order, self.tick_size) {
+                        if let Some(fill) = resting_buy.fill(&mut incoming_order, self.tick_size)? {
                             fills.push(fill);
                         }
 
@@ -407,6 +434,9 @@ impl OrderBook {
         let mut canceled_order = None;
 
         if let Some(order) = self.orders.get_mut(order_id) {
+            if !order.is_open() {
+                return false;
+            }
             // Mark the order as canceled
             order.status = OrderStatus::Canceled;
 
@@ -443,11 +473,6 @@ impl OrderBook {
     #[pyo3(text_signature = "(self, order_id)")]
     pub fn get_order(&self, order_id: &str) -> Option<Order> {
         self.orders.get(order_id).cloned()
-    }
-
-    /// Helper method to update an order in the `orders` map.
-    fn update_order(&mut self, order: &Order) {
-        self.orders.insert(order.id.clone(), order.clone());
     }
 
     /// Get a list of all buy orders
@@ -531,12 +556,12 @@ impl OrderBook {
     fn __repr__(&self) -> String {
         let best_bid = self
             .best_bid()
-            .map(|(price, qty)| format!("{:.2} @ {}", qty, price * self.tick_size as i64))
+            .map(|(price, qty)| format!("{:.2} @ {}", qty, price as f64 * self.tick_size))
             .unwrap_or_else(|| "None".to_string());
 
         let best_ask = self
             .best_ask()
-            .map(|(price, qty)| format!("{:.2} @ {}", qty, price * self.tick_size as i64))
+            .map(|(price, qty)| format!("{:.2} @ {}", qty, price as f64 * self.tick_size))
             .unwrap_or_else(|| "None".to_string());
 
         let spread = match (self.best_bid(), self.best_ask()) {
@@ -557,9 +582,16 @@ impl OrderBook {
     }
 }
 
+impl OrderBook {
+    /// Helper method to update an order in the `orders` map.
+    fn update_order(&mut self, order: &Order) {
+        self.orders.insert(order.id.clone(), order.clone());
+    }
+}
+
 impl Default for OrderBook {
     fn default() -> Self {
-        Self::new(0.01)
+        Self::new(0.01).expect("the default tick size is positive and finite")
     }
 }
 

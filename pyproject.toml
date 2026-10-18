@@ -17,6 +17,7 @@ repository = "https://github.com/pnxenopoulos/litebook"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6,<7",
     "maturin==1.8.1",
     "pytest>=8.3.3",
     "ruff>=0.9.3",
