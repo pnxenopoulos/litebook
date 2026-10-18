@@ -34,5 +34,22 @@ print(fill)
 open_buy_order = orderbook.get_order(buy_order.id)
 ```
 
+## Development
+
+Install Rust and [uv](https://docs.astral.sh/uv/), then rebuild the release
+extension and run its Python tests from this checkout:
+
+```shell
+bash scripts/rebuild.sh
+```
+
+The script installs development tools from `uv.lock`, builds with `Cargo.lock`,
+prints the imported native extension path, and runs tests only after the build
+succeeds. Run it again after changing Rust code. Pass pytest options through the
+script, for example `bash scripts/rebuild.sh -q`.
+
+Rust tools can run without the extension feature; Maturin enables it for Python
+builds. Track the review sequence and validation in [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
+
 #### Need help?
 Please [open an issue](https://github.com/pnxenopoulos/litebook/issues) if you need help or have a feature request.

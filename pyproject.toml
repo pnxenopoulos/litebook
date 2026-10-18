@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.0"]
+requires = ["maturin>=1.8.1,<2"]
 build-backend = "maturin"
 
 [project]
@@ -17,6 +17,7 @@ repository = "https://github.com/pnxenopoulos/litebook"
 
 [dependency-groups]
 dev = [
+    "maturin==1.8.1",
     "pytest>=8.3.3",
     "ruff>=0.9.3",
 ]
@@ -24,6 +25,9 @@ dev = [
 # UV Tool Configuration
 [tool.uv]
 package = true
+
+[tool.maturin]
+features = ["extension-module"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
