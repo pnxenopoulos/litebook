@@ -63,12 +63,18 @@ independent list-based model. See [behavior rules](docs/semantics.md).
   submission; reset state for each sample.
 - [x] Use monotonic timers, warmup, repeated samples, fixed seeds, and machine/build
   metadata. Keep per-event latency sampling separate from throughput timing.
-- [ ] Record sustained replay memory behavior and explain retained filled-order history.
-- [ ] Smoke-test benchmark fixtures and run representative release baselines.
+- [x] Record sustained replay memory behavior and explain retained filled-order history.
+- [x] Smoke-test benchmark fixtures and run representative release baselines.
 - [ ] Document commands, results, limitations, and PR link.
 
 Absolute throughput is machine- and workload-specific. Shared CI runs validate
 fixtures and execution; performance comparisons require equivalent builds and hardware.
+
+Validation: 71 Python tests and the native fixture integration test pass; formatting,
+Clippy across all targets, Python import ordering, and both benchmark smoke suites pass.
+Recorded 10 native cases (20 samples each) and 20 Python case/mode combinations
+(7 samples each), plus separate latency sampling and a 60,000-event memory replay.
+See [baseline results](benchmarks/BASELINE.md) and [methodology](benchmarks/README.md).
 
 ## Later stages
 
@@ -77,3 +83,9 @@ fixtures and execution; performance comparisons require equivalent builds and ha
 - [ ] Separate active state from historical retention and reuse output storage.
 - [ ] Compare tree, dense, and paged price indexes on the established workloads.
 - [ ] Profile allocations/cache behavior; evaluate compiler tuning and parallel books.
+
+## Stack review and merge
+
+Review PRs in numeric order. Each PR changes only its own chunk relative to its base.
+After squash/rebase merges, rebase and retarget descendants before merging them so
+already-reviewed commits do not reappear in later diffs. No PR is merged automatically.

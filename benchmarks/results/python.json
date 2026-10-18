@@ -1,0 +1,691 @@
+{
+  "metadata": {
+    "recorded_utc": "2026-10-18T22:14:45.744788+00:00",
+    "revision": "5130546b81dbddcd06d9f50a32783c401524cbbc",
+    "tracked_changes": false,
+    "python": "3.11.8 (main, Jun 25 2024, 21:21:45) [GCC 11.4.0]",
+    "python_optimization": 0,
+    "rustc": "rustc 1.96.1 (31fca3adb 2026-06-26)",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "cpu": "AMD Ryzen 7 7800X3D 8-Core Processor",
+    "logical_cpus": 16,
+    "cpu_affinity": [
+      0
+    ],
+    "litebook_version": "0.0.0",
+    "native_extension": "/home/xeno/litebook/.venv/lib/python3.11/site-packages/litebook/litebook.cpython-311-x86_64-linux-gnu.so",
+    "native_sha256": "a2e7746b5ec214a5f3f001275762cc6e86550c26f4f7aee107545d44dfc01757",
+    "source_sha256": "f81d71a5b1fbbbfb7c9a4a4574da92f0c27bd52532f0ee6b563fb3cc3fc683b5",
+    "cargo_lock_sha256": "c6e62c637c434256a5f0a84c1583aa2b8ea6ed18a46b6b2778aab8b7738a79cf",
+    "uv_lock_sha256": "4e5b291a098102ce3273680710d85bcaa93e3bba138810f19d3a979b18728288",
+    "rustflags": ""
+  },
+  "settings": {
+    "samples": 7,
+    "warmups": 2,
+    "batches": 16,
+    "gc_disabled_during_throughput": true
+  },
+  "results": [
+    {
+      "case": "resting_existing/8",
+      "mode": "precreated",
+      "seed_orders": 8,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 264,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        1002742,
+        990679,
+        983636,
+        992853,
+        972685,
+        1018292,
+        1071001
+      ],
+      "median_ns_per_event": 242.395751953125,
+      "median_events_per_second": 4125484.8401525705,
+      "min_ns_per_event": 237.471923828125,
+      "max_ns_per_event": 261.474853515625,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 250,
+          "p95_ns": 410,
+          "p99_ns": 2255
+        }
+      }
+    },
+    {
+      "case": "resting_existing/8",
+      "mode": "create-add",
+      "seed_orders": 8,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 264,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        3974117,
+        3982069,
+        3877024,
+        3864089,
+        3937889,
+        3875692,
+        3930055
+      ],
+      "median_ns_per_event": 959.486083984375,
+      "median_events_per_second": 1042224.5999101794,
+      "min_ns_per_event": 943.381103515625,
+      "max_ns_per_event": 972.184814453125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 911,
+          "p95_ns": 1142,
+          "p99_ns": 2885
+        }
+      }
+    },
+    {
+      "case": "resting_existing/512",
+      "mode": "precreated",
+      "seed_orders": 512,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 768,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        923762,
+        892192,
+        892162,
+        892743,
+        919874,
+        981957,
+        895799
+      ],
+      "median_ns_per_event": 218.700927734375,
+      "median_events_per_second": 4572454.311737343,
+      "min_ns_per_event": 217.81298828125,
+      "max_ns_per_event": 239.735595703125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 250,
+          "p95_ns": 331,
+          "p99_ns": 511
+        }
+      }
+    },
+    {
+      "case": "resting_existing/512",
+      "mode": "create-add",
+      "seed_orders": 512,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 768,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        3658679,
+        3624275,
+        3610578,
+        3604767,
+        3600249,
+        3591613,
+        3560714
+      ],
+      "median_ns_per_event": 880.070068359375,
+      "median_events_per_second": 1136273.1627314608,
+      "min_ns_per_event": 869.31494140625,
+      "max_ns_per_event": 893.232177734375,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 911,
+          "p95_ns": 1021,
+          "p99_ns": 1533
+        }
+      }
+    },
+    {
+      "case": "resting_new/256",
+      "mode": "precreated",
+      "seed_orders": 0,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 256,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        1118151,
+        1154820,
+        1249219,
+        1266522,
+        1243939,
+        1253938,
+        1268155
+      ],
+      "median_ns_per_event": 304.985107421875,
+      "median_events_per_second": 3278848.624620663,
+      "min_ns_per_event": 272.986083984375,
+      "max_ns_per_event": 309.608154296875,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 281,
+          "p95_ns": 390,
+          "p99_ns": 2344
+        }
+      }
+    },
+    {
+      "case": "resting_new/256",
+      "mode": "create-add",
+      "seed_orders": 0,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 256,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        4281632,
+        3888064,
+        3929843,
+        4063066,
+        4017190,
+        4001520,
+        3998594
+      ],
+      "median_ns_per_event": 976.93359375,
+      "median_events_per_second": 1023611.0278094324,
+      "min_ns_per_event": 949.234375,
+      "max_ns_per_event": 1045.3203125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 942,
+          "p95_ns": 1142,
+          "p99_ns": 2946
+        }
+      }
+    },
+    {
+      "case": "cancel/16",
+      "mode": "precreated",
+      "seed_orders": 16,
+      "events_per_fixture": 16,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 16,
+      "active_after_fixture": 0,
+      "events_per_sample": 256,
+      "sample_elapsed_ns": [
+        45867,
+        45486,
+        43192,
+        46388,
+        45456,
+        47651,
+        45567
+      ],
+      "median_ns_per_event": 177.99609375,
+      "median_events_per_second": 5618100.818574846,
+      "min_ns_per_event": 168.71875,
+      "max_ns_per_event": 186.13671875,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 256,
+          "p50_ns": 210,
+          "p95_ns": 291,
+          "p99_ns": 421
+        }
+      }
+    },
+    {
+      "case": "cancel/16",
+      "mode": "create-add",
+      "seed_orders": 16,
+      "events_per_fixture": 16,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 16,
+      "active_after_fixture": 0,
+      "events_per_sample": 256,
+      "sample_elapsed_ns": [
+        47089,
+        47541,
+        62809,
+        47109,
+        46639,
+        47130,
+        51287
+      ],
+      "median_ns_per_event": 184.1015625,
+      "median_events_per_second": 5431784.426055591,
+      "min_ns_per_event": 182.18359375,
+      "max_ns_per_event": 245.34765625,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 256,
+          "p50_ns": 231,
+          "p95_ns": 371,
+          "p99_ns": 571
+        }
+      }
+    },
+    {
+      "case": "cancel/256",
+      "mode": "precreated",
+      "seed_orders": 256,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 256,
+      "active_after_fixture": 0,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        2293770,
+        2333706,
+        2327093,
+        2358424,
+        2320873,
+        2304702,
+        2275406
+      ],
+      "median_ns_per_event": 566.619384765625,
+      "median_events_per_second": 1764853.1393143872,
+      "min_ns_per_event": 555.51904296875,
+      "max_ns_per_event": 575.787109375,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 4096,
+          "p50_ns": 581,
+          "p95_ns": 1082,
+          "p99_ns": 1242
+        }
+      }
+    },
+    {
+      "case": "cancel/256",
+      "mode": "create-add",
+      "seed_orders": 256,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 256,
+      "active_after_fixture": 0,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        2347894,
+        2315862,
+        2370235,
+        2330099,
+        2351811,
+        2324750,
+        2338846
+      ],
+      "median_ns_per_event": 571.00732421875,
+      "median_events_per_second": 1751291.0212985377,
+      "min_ns_per_event": 565.39599609375,
+      "max_ns_per_event": 578.670654296875,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 4096,
+          "p50_ns": 591,
+          "p95_ns": 1092,
+          "p99_ns": 1252
+        }
+      }
+    },
+    {
+      "case": "cancel/4096",
+      "mode": "precreated",
+      "seed_orders": 4096,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 256,
+      "active_after_fixture": 3840,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        57975445,
+        56675318,
+        58097775,
+        57747731,
+        57602979,
+        57995382,
+        58535897
+      ],
+      "median_ns_per_event": 14154.161376953125,
+      "median_events_per_second": 70650.60043954816,
+      "min_ns_per_event": 13836.74755859375,
+      "max_ns_per_event": 14290.990478515625,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 4096,
+          "p50_ns": 14918,
+          "p95_ns": 21050,
+          "p99_ns": 31730
+        }
+      }
+    },
+    {
+      "case": "cancel/4096",
+      "mode": "create-add",
+      "seed_orders": 4096,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 0,
+      "cancels_per_fixture": 256,
+      "active_after_fixture": 3840,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        56299325,
+        58768008,
+        57562440,
+        56779906,
+        60614840,
+        60652492,
+        59458982
+      ],
+      "median_ns_per_event": 14347.658203125,
+      "median_events_per_second": 69697.78523035867,
+      "min_ns_per_event": 13744.952392578125,
+      "max_ns_per_event": 14807.7373046875,
+      "separate_event_latency": {
+        "cancel": {
+          "observations": 4096,
+          "p50_ns": 15319,
+          "p95_ns": 22002,
+          "p99_ns": 34415
+        }
+      }
+    },
+    {
+      "case": "partial/256",
+      "mode": "precreated",
+      "seed_orders": 1,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 256,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 1,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        1867332,
+        1993170,
+        1889935,
+        1852133,
+        1862202,
+        1849889,
+        1882922
+      ],
+      "median_ns_per_event": 455.8916015625,
+      "median_events_per_second": 2193503.8868289087,
+      "min_ns_per_event": 451.633056640625,
+      "max_ns_per_event": 486.61376953125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 431,
+          "p95_ns": 541,
+          "p99_ns": 2455
+        }
+      }
+    },
+    {
+      "case": "partial/256",
+      "mode": "create-add",
+      "seed_orders": 1,
+      "events_per_fixture": 256,
+      "fills_per_fixture": 256,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 1,
+      "events_per_sample": 4096,
+      "sample_elapsed_ns": [
+        4606256,
+        4684586,
+        4589506,
+        4554859,
+        4589836,
+        4584155,
+        4566061
+      ],
+      "median_ns_per_event": 1120.48486328125,
+      "median_events_per_second": 892470.780079599,
+      "min_ns_per_event": 1112.026123046875,
+      "max_ns_per_event": 1143.69775390625,
+      "separate_event_latency": {
+        "add": {
+          "observations": 4096,
+          "p50_ns": 1072,
+          "p95_ns": 1282,
+          "p99_ns": 2525
+        }
+      }
+    },
+    {
+      "case": "sweep/8",
+      "mode": "precreated",
+      "seed_orders": 8,
+      "events_per_fixture": 1,
+      "fills_per_fixture": 8,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 0,
+      "events_per_sample": 16,
+      "sample_elapsed_ns": [
+        37641,
+        38143,
+        37371,
+        38213,
+        37261,
+        37210,
+        37451
+      ],
+      "median_ns_per_event": 2340.6875,
+      "median_events_per_second": 427224.90721209045,
+      "min_ns_per_event": 2325.625,
+      "max_ns_per_event": 2388.3125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 16,
+          "p50_ns": 2344,
+          "p95_ns": 3586,
+          "p99_ns": 3586
+        }
+      }
+    },
+    {
+      "case": "sweep/8",
+      "mode": "create-add",
+      "seed_orders": 8,
+      "events_per_fixture": 1,
+      "fills_per_fixture": 8,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 0,
+      "events_per_sample": 16,
+      "sample_elapsed_ns": [
+        50346,
+        49674,
+        49353,
+        47520,
+        48131,
+        49123,
+        53181
+      ],
+      "median_ns_per_event": 3084.5625,
+      "median_events_per_second": 324195.0843920329,
+      "min_ns_per_event": 2970.0,
+      "max_ns_per_event": 3323.8125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 16,
+          "p50_ns": 2945,
+          "p95_ns": 3336,
+          "p99_ns": 3336
+        }
+      }
+    },
+    {
+      "case": "sweep/64",
+      "mode": "precreated",
+      "seed_orders": 64,
+      "events_per_fixture": 1,
+      "fills_per_fixture": 64,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 0,
+      "events_per_sample": 16,
+      "sample_elapsed_ns": [
+        324936,
+        339554,
+        340596,
+        357939,
+        355885,
+        328513,
+        329094
+      ],
+      "median_ns_per_event": 21222.125,
+      "median_events_per_second": 47120.63471494961,
+      "min_ns_per_event": 20308.5,
+      "max_ns_per_event": 22371.1875,
+      "separate_event_latency": {
+        "add": {
+          "observations": 16,
+          "p50_ns": 17283,
+          "p95_ns": 33213,
+          "p99_ns": 33213
+        }
+      }
+    },
+    {
+      "case": "sweep/64",
+      "mode": "create-add",
+      "seed_orders": 64,
+      "events_per_fixture": 1,
+      "fills_per_fixture": 64,
+      "cancels_per_fixture": 0,
+      "active_after_fixture": 0,
+      "events_per_sample": 16,
+      "sample_elapsed_ns": [
+        337390,
+        359703,
+        339013,
+        347780,
+        361266,
+        348632,
+        340556
+      ],
+      "median_ns_per_event": 21736.25,
+      "median_events_per_second": 46006.09580769452,
+      "min_ns_per_event": 21086.875,
+      "max_ns_per_event": 22579.125,
+      "separate_event_latency": {
+        "add": {
+          "observations": 16,
+          "p50_ns": 18034,
+          "p95_ns": 20168,
+          "p99_ns": 20168
+        }
+      }
+    },
+    {
+      "case": "mixed/64",
+      "mode": "precreated",
+      "seed_orders": 64,
+      "events_per_fixture": 384,
+      "fills_per_fixture": 128,
+      "cancels_per_fixture": 64,
+      "active_after_fixture": 64,
+      "events_per_sample": 6144,
+      "sample_elapsed_ns": [
+        2079384,
+        1897910,
+        1935903,
+        1915994,
+        1940320,
+        1921786,
+        1930501
+      ],
+      "median_ns_per_event": 314.2091471354167,
+      "median_events_per_second": 3182593.5340100834,
+      "min_ns_per_event": 308.9046223958333,
+      "max_ns_per_event": 338.44140625,
+      "separate_event_latency": {
+        "add": {
+          "observations": 5120,
+          "p50_ns": 260,
+          "p95_ns": 561,
+          "p99_ns": 761
+        },
+        "cancel": {
+          "observations": 1024,
+          "p50_ns": 230,
+          "p95_ns": 300,
+          "p99_ns": 461
+        }
+      }
+    },
+    {
+      "case": "mixed/64",
+      "mode": "create-add",
+      "seed_orders": 64,
+      "events_per_fixture": 384,
+      "fills_per_fixture": 128,
+      "cancels_per_fixture": 64,
+      "active_after_fixture": 64,
+      "events_per_sample": 6144,
+      "sample_elapsed_ns": [
+        5303689,
+        5325110,
+        5323789,
+        5298039,
+        5316564,
+        5285816,
+        5358704
+      ],
+      "median_ns_per_event": 865.326171875,
+      "median_events_per_second": 1155633.6009497864,
+      "min_ns_per_event": 860.3216145833334,
+      "max_ns_per_event": 872.1848958333334,
+      "separate_event_latency": {
+        "add": {
+          "observations": 5120,
+          "p50_ns": 912,
+          "p95_ns": 1262,
+          "p99_ns": 1803
+        },
+        "cancel": {
+          "observations": 1024,
+          "p50_ns": 241,
+          "p95_ns": 311,
+          "p99_ns": 531
+        }
+      }
+    }
+  ],
+  "memory_replay": {
+    "events": 60000,
+    "active_orders": 64,
+    "expected_filled_orders_retained": 40000,
+    "checkpoints": [
+      {
+        "events": 0,
+        "rss_bytes": 23195648
+      },
+      {
+        "events": 15000,
+        "rss_bytes": 25456640
+      },
+      {
+        "events": 30000,
+        "rss_bytes": 27746304
+      },
+      {
+        "events": 45000,
+        "rss_bytes": 31358976
+      },
+      {
+        "events": 60000,
+        "rss_bytes": 32321536
+      }
+    ],
+    "rss_method": "Linux VmRSS; separate fresh process"
+  }
+}
