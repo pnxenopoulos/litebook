@@ -33,7 +33,7 @@ jobs:
       - name: Format + Clippy
         run: |
           cargo fmt --all -- --check
-          cargo clippy --locked -- -D warnings --allow dead_code
+          cargo clippy --locked --all-targets -- -D warnings --allow dead_code
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -50,10 +50,13 @@ jobs:
       - name: Ruff
         run: uv run --no-sync ruff check --select I .
 
-      - name: Benchmark
+      - name: Native fixture tests
+        run: bash scripts/native.sh test --locked
+
+      - name: Benchmark smoke checks
         run: |
-          uv run --no-sync benchmarks/book.py
-          uv run --no-sync benchmarks/order.py
+          bash scripts/native.sh bench --locked --bench book -- --test
+          uv run --no-sync python -m benchmarks.book --samples 2 --warmups 1 --batches 2 --output target/python-benchmark-smoke.json
 
       - name: Minimize uv cache
         run: uv cache prune --ci
