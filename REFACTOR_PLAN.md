@@ -10,7 +10,7 @@ Review and merge them in order; later branches start from the preceding branch.
 | --- | --- | --- | --- |
 | 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | [PR #7](https://github.com/pnxenopoulos/litebook/pull/7) ready for review |
 | 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | [PR #8](https://github.com/pnxenopoulos/litebook/pull/8) ready for review |
-| 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | In progress |
+| 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | [PR #9](https://github.com/pnxenopoulos/litebook/pull/9) ready for review |
 
 Update this file in each PR with its link, validation, completed work, and remaining
 work. PRs remain unmerged until reviewed.
@@ -65,7 +65,7 @@ independent list-based model. See [behavior rules](docs/semantics.md).
   metadata. Keep per-event latency sampling separate from throughput timing.
 - [x] Record sustained replay memory behavior and explain retained filled-order history.
 - [x] Smoke-test benchmark fixtures and run representative release baselines.
-- [ ] Document commands, results, limitations, and PR link.
+- [x] Document commands, results, limitations, and PR link.
 
 Absolute throughput is machine- and workload-specific. Shared CI runs validate
 fixtures and execution; performance comparisons require equivalent builds and hardware.
