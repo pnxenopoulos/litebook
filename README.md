@@ -34,6 +34,8 @@ print(fill)
 open_buy_order = orderbook.get_order(buy_order.id)
 ```
 
+Matching and lifecycle rules are documented in [docs/semantics.md](docs/semantics.md).
+
 ## Development
 
 Install Rust and [uv](https://docs.astral.sh/uv/), then rebuild the release

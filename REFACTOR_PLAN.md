@@ -9,7 +9,7 @@ Review and merge them in order; later branches start from the preceding branch.
 | Chunk | Branch | Scope | Status |
 | --- | --- | --- | --- |
 | 1 | `codex/stage1-rebuild` | Build configuration, locked release rebuild, this tracker | [PR #7](https://github.com/pnxenopoulos/litebook/pull/7) ready for review |
-| 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | Planned |
+| 2 | `codex/stage1-correctness` | Correctness fixes, regression and reference-model tests | In progress |
 | 3 | `codex/stage1-benchmarks` | Native and Python workloads, reproducible baseline results | Planned |
 
 Update this file in each PR with its link, validation, completed work, and remaining
@@ -33,21 +33,25 @@ with Rust 1.96.1. Rust formatting, Clippy, and Python import-order checks pass.
 
 ## Chunk 2 correctness
 
-- [ ] Assign fill buyer and seller IDs by side, for either resting side.
-- [ ] Reject duplicate submissions without changing book state.
-- [ ] Reject non-finite or non-positive prices, quantities, and tick sizes; check
+- [x] Assign fill buyer and seller IDs by side, for either resting side.
+- [x] Reject duplicate submissions without changing book state.
+- [x] Reject non-finite or non-positive prices, quantities, and tick sizes; check
   price-to-tick conversion bounds before casting.
-- [ ] Prevent fills or submissions involving completed orders and zero quantities.
-- [ ] Return false when canceling a filled or already canceled order.
-- [ ] Preserve FIFO, seller-limit execution prices, nearest-tick rounding, detached
+- [x] Prevent fills or submissions involving completed orders and zero quantities.
+- [x] Return false when canceling a filled or already canceled order.
+- [x] Preserve FIFO, seller-limit execution prices, nearest-tick rounding, detached
   Python order snapshots, and lookup of filled orders.
-- [ ] Fix fractional-price book display and test it.
-- [ ] Add deterministic regressions and randomized comparison with a simple reference
+- [x] Fix fractional-price book display and test it.
+- [x] Add deterministic regressions and randomized comparison with a simple reference
   model, checking quantities, fills, FIFO, and book/index consistency.
 - [ ] Rebuild, run required checks, and open PR.
 
 Duplicate-ID protection covers IDs still known to the book. Permanent rejection of
 all previously canceled IDs would require retained tombstones and is deferred.
+
+Validation: regressions produced 23 failures before fixes. The release extension now
+passes 50 tests, including 150 deterministic Hypothesis histories compared with an
+independent list-based model. See [behavior rules](docs/semantics.md).
 
 ## Chunk 3 baseline benchmarks
 
